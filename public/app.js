@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
-const speedSlider = document.getElementById('speedSlider');
+const tickSpeedSlider = document.getElementById('tickSpeedSlider');
 const foldSlider = document.getElementById('foldSlider');
 const foldValueSpan = document.getElementById('foldValue');
 const zoomSlider = document.getElementById('zoomSlider');
@@ -41,6 +41,7 @@ let patterns = [];
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
+const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let flickerPhase = false;
@@ -143,6 +144,46 @@ function getNeighborsSum(r, c) {
     }
     return sum;
 }
+
+// Update a single cell and return its new value and fold state
+function updateCellState(r, c, n, foldThreshold) {
+    let val = grid[r][c];
+    let folded = false;
+
+    if (foldThreshold > 0 && flickerCountGrid[r][c] >= foldThreshold) {
+        val = 0;
+        folded = true;
+        flickerCountGrid[r][c] = 0;
+    } else {
+        if (neighborThreshold === 0) {
+            val = grid[r][c] ? 0 : 1;
+        } else {
+            val = n === neighborThreshold ? 1 : 0;
+        }
+
+        if (residueGrid[r][c] > 0) {
+            val = 1;
+            residueGrid[r][c]--;
+        }
+
+        if (foldThreshold > 0 && n > foldThreshold) {
+            val = 0;
+            folded = true;
+            flickerCountGrid[r][c] = 0;
+        }
+
+        if (!folded) {
+            if (val !== lastStateGrid[r][c]) {
+                flickerCountGrid[r][c] += 1;
+            } else {
+                flickerCountGrid[r][c] = 0;
+            }
+        }
+    }
+
+    lastStateGrid[r][c] = val;
+    return { val, folded };
+}
 // Update all cells based on the neighbor threshold
 // Future folding mechanics can modify the grid here using foldSlider.value
 
@@ -161,6 +202,9 @@ function update() {
             grid: JSON.parse(JSON.stringify(grid)),
             colorGrid: JSON.parse(JSON.stringify(colorGrid))
         });
+        if (history.length > MAX_HISTORY) {
+            history.shift();
+        }
         let next = [];
         let nextFold = [];
         for (let r = 0; r < rows; r++) {
@@ -168,38 +212,14 @@ function update() {
             const foldRow = [];
             for (let c = 0; c < cols; c++) {
                 const n = getNeighborsSum(r, c);
-                let val = grid[r][c];
-                let folded = false;
-
-                if (neighborThreshold === 0) {
-                    val = grid[r][c] ? 0 : 1;
-                } else {
-                    val = n === neighborThreshold ? 1 : 0;
-                }
-
-                if (residueGrid[r][c] > 0) {
-                    val = 1;
-                    residueGrid[r][c]--;
-                }
-
-                if (val !== lastStateGrid[r][c]) {
-                    flickerCountGrid[r][c] += 1;
-                } else {
-                    flickerCountGrid[r][c] = 0;
-                }
-
-                if (foldThreshold > 0 && (n > foldThreshold || flickerCountGrid[r][c] >= foldThreshold)) {
-                    val = 0;
-                    folded = true;
-                    flickerCountGrid[r][c] = 0;
-                }
+                const { val, folded } = updateCellState(r, c, n, foldThreshold);
 
                 if (debugOverlay) {
                     console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
                 }
+
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
-                lastStateGrid[r][c] = val;
             }
             next.push(row);
             nextFold.push(foldRow);
@@ -318,7 +338,7 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    const speed = parseInt(speedSlider.value);
+    const speed = parseInt(tickSpeedSlider.value);
     intervalId = setInterval(update, speed);
 }
 
@@ -410,10 +430,10 @@ foldSlider.addEventListener('input', () => {
     foldValueSpan.textContent = foldSlider.value;
 });
 
-speedSlider.addEventListener('input', () => {
+tickSpeedSlider.addEventListener('input', () => {
     if (running) {
         clearInterval(intervalId);
-        const speed = parseInt(speedSlider.value);
+        const speed = parseInt(tickSpeedSlider.value);
         intervalId = setInterval(update, speed);
     }
 });

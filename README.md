@@ -8,7 +8,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 1. Click and drag on the grid to paint active cells, even while the simulation is running.
 2. Press **Start** to run the simulation or **Stop** to pause.
-3. Adjust **Pulse Length**, **Fold Threshold** and **Zoom** with the sliders. A threshold of 0 disables folding and folded cells appear dark gray. The current fold threshold is shown next to its slider. These values—and **Neighbor Count**—can be changed even while the simulation is running.
+3. Adjust **Tick Speed**, **Fold Threshold** and **Zoom** with the sliders. A threshold of 0 disables folding and folded cells appear dark gray. The current fold threshold is shown next to its slider. These values—and **Neighbor Count**—can be changed even while the simulation is running.
 4. Choose a tool from the **Tool** drop-down:
    - **Brush** – paint live cells.
    - **Eraser** – reset cells to 0.
