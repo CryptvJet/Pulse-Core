@@ -22,6 +22,7 @@ const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
 const debugCheckbox = document.getElementById('debugOverlay');
 const patternDetectCheckbox = document.getElementById('patternDetect');
+const pulseFlashCheckbox = document.getElementById('pulseFlash');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -51,6 +52,7 @@ let zoomWarningShown = false;
 const PATTERN_CHECK_INTERVAL = 5;
 const PATTERN_CELL_THRESHOLD = 100000;
 let patternDetectionEnabled = true;
+let pulseFlash = true;
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -137,7 +139,7 @@ function drawGrid() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
-                if (running) {
+                if (running && pulseFlash) {
                     ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
                 } else {
                     ctx.fillStyle = colorGrid[r][c];
@@ -539,6 +541,7 @@ function init() {
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
     patternDetectionEnabled = patternDetectCheckbox ? patternDetectCheckbox.checked : true;
+    pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
 }
 
 window.addEventListener('resize', () => {
@@ -586,6 +589,13 @@ debugCheckbox.addEventListener('change', () => {
     debugOverlay = debugCheckbox.checked;
     drawGrid();
 });
+
+if (pulseFlashCheckbox) {
+    pulseFlashCheckbox.addEventListener('change', () => {
+        pulseFlash = pulseFlashCheckbox.checked;
+        drawGrid();
+    });
+}
 
 if (patternDetectCheckbox) {
     patternDetectCheckbox.addEventListener('change', () => {
