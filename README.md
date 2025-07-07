@@ -6,7 +6,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 ## Usage
 
-1. Click cells on the grid to activate them.
+1. Click and drag on the grid to paint active cells, even while the simulation is running.
 2. Press **Start** to run the simulation or **Stop** to pause.
 3. Adjust **Pulse Length**, **Fold Threshold** and **Zoom** with the sliders. A threshold of 0 disables folding and folded cells appear dark gray.
 4. Choose a tool from the **Tool** drop-down:
