@@ -1,5 +1,7 @@
 # Pulse-Core
 
+Yay!
+
 This project contains a simple pulse simulation playground. Open `index.html` in a browser to try it out.
 
 ## Usage
