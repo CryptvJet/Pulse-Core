@@ -5,7 +5,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 ## Usage
 
 1. Click cells on the grid to activate them. Each cell stores a color and will
-   evolve based on its neighbors during the simulation.
+   oscillate on every pulse once touched.
 2. Press **Start** to run the simulation or **Stop** to pause. You can continue
    editing the grid while the simulation is running.
 3. Adjust **Pulse Speed** and **Zoom** with the sliders.
@@ -17,9 +17,8 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 Use the **Reverse** button to step backward through previous pulses. A color
 picker lets you choose the color for brush strokes, injected pulses and stamped
-patterns. Cells now adopt dominant neighbor colors or blend hues when colors
-conflict, enabling emergent multi-color behavior. The **Pulse Injector** tool
-creates explicit pulses while brushed cells remain active.
+patterns. The **Pulse Injector** tool creates explicit pulses while brushed
+cells continue to flicker. No neighbor-based Game of Life logic is applied.
 
 In **Binary** mode the grid no longer follows Conway's Life. Instead, cells you
 modify oscillate between 0 and 1 every pulse. Injected pulses override this

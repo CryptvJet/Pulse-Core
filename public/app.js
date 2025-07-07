@@ -43,6 +43,8 @@ let pulseCounter = 0;
 let reverse = false;
 let history = [];
 const HISTORY_LIMIT = 100;
+// Toggle for optional Conway's Game of Life rules (disabled)
+const useConway = false;
 
 function invertColor(hex) {
     const h = hex.replace('#', '');
@@ -69,40 +71,6 @@ function blendColors(a, colorB) {
     return '#' + r.toString(16).padStart(2, '0') +
         g.toString(16).padStart(2, '0') +
         bVal.toString(16).padStart(2, '0');
-}
-
-function getNeighbors(stateGrid, colorGrid, r, c) {
-    const cells = [];
-    for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const nr = (r + dr + rows) % rows;
-            const nc = (c + dc + cols) % cols;
-            cells.push({ state: stateGrid[nr][nc], color: colorGrid[nr][nc] });
-        }
-    }
-    return cells;
-}
-
-function getNextCellState(current, neighbors) {
-    const counts = {};
-    neighbors.forEach(cell => {
-        if (cell.state > 0) {
-            counts[cell.color] = (counts[cell.color] || 0) + 1;
-        }
-    });
-    const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    if (dominant.length === 0) {
-        return { state: 0, color: '#000000' };
-    }
-    const [topColor, count] = dominant[0];
-    if (count > 3) {
-        return { state: 1, color: topColor };
-    }
-    if (dominant.length > 1 && dominant[0][1] === dominant[1][1]) {
-        return { state: 1, color: blendColors(dominant[0][0], dominant[1][0]) };
-    }
-    return current.state > 0 ? { state: 1, color: current.color } : { state: 0, color: '#000000' };
 }
 
 function updateDimensions() {
@@ -178,36 +146,27 @@ function updateColor() {
         const next = grid.map(row => row.slice());
         const nextColors = colorGrid.map(row => row.slice());
         const pulsed = new Set();
-        // In the old implementation every cell was recalculated here,
-        // forcing a full-frame flicker. Now we only modify cells affected
-        // by active pulses or future mechanics.
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
                 next[p.r][p.c] = p.remaining % 2;
-                nextColors[p.r][p.c] = p.color;
                 pulsed.add(p.r + ',' + p.c);
-                p.remaining--;
-                if (p.remaining <= 0) {
-                    next[p.r][p.c] = 0;
-                    nextColors[p.r][p.c] = '#000000';
+                if (!touchedGrid[p.r][p.c]) {
+                    nextColors[p.r][p.c] = p.color;
+                    touchedGrid[p.r][p.c] = true;
                 }
+                p.remaining--;
             }
         });
-        // Apply neighbor-based color evolution
-        const evolvedGrid = next.map(row => row.slice());
-        const evolvedColors = nextColors.map(row => row.slice());
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
-                if (pulsed.has(r + ',' + c)) continue;
-                const neighbors = getNeighbors(next, nextColors, r, c);
-                const { state, color } = getNextCellState({ state: next[r][c], color: nextColors[r][c] }, neighbors);
-                evolvedGrid[r][c] = state;
-                evolvedColors[r][c] = color;
+                if (touchedGrid[r][c] && !pulsed.has(r + ',' + c)) {
+                    next[r][c] = 1 - next[r][c];
+                }
             }
         }
         pulses = pulses.filter(p => p.remaining > 0);
-        grid = evolvedGrid;
-        colorGrid = evolvedColors;
+        grid = next;
+        colorGrid = nextColors;
         pulseCounter++;
     }
     drawGrid();
@@ -221,13 +180,19 @@ function updateBinary() {
         if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
             next[p.r][p.c] = p.remaining % 2;
             pulsed.add(p.r + ',' + p.c);
+            if (!touchedGrid[p.r][p.c]) {
+                colorGrid[p.r][p.c] = p.color;
+                touchedGrid[p.r][p.c] = true;
+            }
             p.remaining--;
         }
     });
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (!pulsed.has(r + ',' + c)) {
-                next[r][c] = touchedGrid[r][c] ? 1 - grid[r][c] : grid[r][c];
+            if (touchedGrid[r][c] && !pulsed.has(r + ',' + c)) {
+                next[r][c] = 1 - grid[r][c];
+            } else if (!touchedGrid[r][c]) {
+                next[r][c] = grid[r][c];
             }
         }
     }
