@@ -24,3 +24,20 @@ body {
     background: #000;
     display: block;
 }
+
+#tools {
+    position: absolute;
+    top: 120px;
+    left: 10px;
+    background: rgba(34, 34, 34, 0.8);
+    padding: 10px;
+    z-index: 10;
+    border-radius: 4px;
+}
+
+#tools select,
+#tools input,
+#tools button {
+    margin-top: 4px;
+    display: block;
+}

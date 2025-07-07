@@ -8,6 +8,12 @@ const stopBtn = document.getElementById('stopBtn');
 const speedSlider = document.getElementById('speedSlider');
 const foldSlider = document.getElementById('foldSlider');
 const zoomSlider = document.getElementById('zoomSlider');
+const toolSelect = document.getElementById('toolSelect');
+const pulseLengthInput = document.getElementById('pulseLength');
+const savePatternBtn = document.getElementById('savePatternBtn');
+const patternSelect = document.getElementById('patternSelect');
+const pulseLengthLabel = document.getElementById('pulseLengthLabel');
+const patternLabel = document.getElementById('patternLabel');
 
 let cellSize = parseInt(zoomSlider.value);
 let rows;
@@ -15,6 +21,9 @@ let cols;
 let grid = [];
 let running = false;
 let intervalId = null;
+let tool = 'brush';
+let pulses = [];
+let patterns = [];
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -72,6 +81,35 @@ function update() {
         next.push(row);
     }
     grid = next;
+    // apply active pulses
+    pulses.forEach(p => {
+        if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
+            grid[p.r][p.c] = p.remaining % 2;
+            p.remaining--;
+        }
+    });
+    pulses = pulses.filter(p => p.remaining > 0);
+    drawGrid();
+}
+
+function applyTool(r, c) {
+    if (tool === 'brush') {
+        grid[r][c] = 1;
+    } else if (tool === 'eraser') {
+        grid[r][c] = 0;
+    } else if (tool === 'pulse') {
+        const len = parseInt(pulseLengthInput.value) || 1;
+        pulses.push({ r, c, remaining: len * 2 });
+    } else if (tool === 'stamper') {
+        const pattern = patterns.find(p => p.name === patternSelect.value);
+        if (pattern) {
+            pattern.cells.forEach(([dr, dc]) => {
+                const nr = (r + dr + rows) % rows;
+                const nc = (c + dc + cols) % cols;
+                grid[nr][nc] = 1;
+            });
+        }
+    }
     drawGrid();
 }
 // UI handlers
@@ -86,8 +124,7 @@ function toggleCell(event) {
     const c = Math.floor(x / cellSize);
     const r = Math.floor(y / cellSize);
     if (r >= 0 && r < rows && c >= 0 && c < cols) {
-        grid[r][c] = grid[r][c] === 1 ? 0 : 1;
-        drawGrid();
+        applyTool(r, c);
     }
 }
 
@@ -107,10 +144,35 @@ function stop() {
     clearInterval(intervalId);
 }
 
+function saveCurrentPattern() {
+    const cells = [];
+    let minR = rows, minC = cols;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) {
+                cells.push([r, c]);
+                if (r < minR) minR = r;
+                if (c < minC) minC = c;
+            }
+        }
+    }
+    if (cells.length === 0) return;
+    const name = prompt('Pattern name?');
+    if (!name) return;
+    const rel = cells.map(([r, c]) => [r - minR, c - minC]);
+    patterns.push({ name, cells: rel });
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    patternSelect.appendChild(opt);
+}
+
 function init() {
     updateDimensions();
     createGrid();
     drawGrid();
+    pulseLengthLabel.style.display = 'none';
+    patternLabel.style.display = 'none';
 }
 
 window.addEventListener('resize', () => {
@@ -124,6 +186,14 @@ zoomSlider.addEventListener('input', () => {
     createGrid();
     drawGrid();
 });
+
+toolSelect.addEventListener('change', () => {
+    tool = toolSelect.value;
+    pulseLengthLabel.style.display = tool === 'pulse' ? 'block' : 'none';
+    patternLabel.style.display = tool === 'stamper' ? 'block' : 'none';
+});
+
+savePatternBtn.addEventListener('click', saveCurrentPattern);
 
 canvas.addEventListener('click', toggleCell);
 startBtn.addEventListener('click', start);
