@@ -19,6 +19,7 @@ const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
 const modeSelect = document.getElementById('modeSelect');
+const neighborSelect = document.getElementById('neighborSelect');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -35,6 +36,7 @@ let pulseCounter = 0;
 let reverse = false;
 let history = [];
 let mode = 'pulse';
+let neighborThreshold = parseInt(neighborSelect.value);
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -80,7 +82,7 @@ function drawGrid() {
 }
 
 function getNeighborsSum(r, c) {
-    let sum = grid[r][c];
+    let sum = 0;
     for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
             if (dr === 0 && dc === 0) continue;
@@ -113,7 +115,7 @@ function update() {
                 const row = [];
                 for (let c = 0; c < cols; c++) {
                     const n = getNeighborsSum(r, c);
-                    row.push(((n + 1) ** 2) % 2);
+                    row.push(n === neighborThreshold ? 1 : 0);
                 }
                 next.push(row);
             }
@@ -235,6 +237,7 @@ function init() {
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
     mode = modeSelect.value;
+    neighborThreshold = parseInt(neighborSelect.value);
 }
 
 window.addEventListener('resize', () => {
@@ -265,6 +268,10 @@ colorPicker.addEventListener('input', () => {
 
 modeSelect.addEventListener('change', () => {
     mode = modeSelect.value;
+});
+
+neighborSelect.addEventListener('change', () => {
+    neighborThreshold = parseInt(neighborSelect.value);
 });
 
 reverseBtn.addEventListener('click', () => {
