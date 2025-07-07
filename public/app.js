@@ -24,6 +24,7 @@ const debugCheckbox = document.getElementById('debugOverlay');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
+const gridLinesToggle = document.getElementById('gridLinesToggle');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -46,6 +47,7 @@ let history = [];
 const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
+let showGridLines = true;
 // Maximum row/column count before zoom is restricted. Increase at your own risk
 const MAX_DIMENSION = 500;
 
@@ -129,7 +131,7 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
-    const drawSize = Math.max(cellSize - 1, 1);
+    const drawSize = showGridLines ? Math.max(cellSize - 1, 1) : cellSize;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
@@ -522,6 +524,7 @@ function init() {
     updateDimensions();
     createGrid();
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
+    showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
     pulseLengthLabel.style.display = 'none';
     patternLabel.style.display = 'none';
@@ -582,6 +585,13 @@ debugCheckbox.addEventListener('change', () => {
 if (pulseFlashCheckbox) {
     pulseFlashCheckbox.addEventListener('change', () => {
         pulseFlash = pulseFlashCheckbox.checked;
+        drawGrid();
+    });
+}
+
+if (gridLinesToggle) {
+    gridLinesToggle.addEventListener('change', () => {
+        showGridLines = gridLinesToggle.checked;
         drawGrid();
     });
 }
