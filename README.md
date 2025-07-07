@@ -23,4 +23,14 @@ Use the **Reverse** button to step backward through previous pulses. A color pic
 
 This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
 
+## Offline Pattern Saving
+
+You can save the current pattern to a `.json` file and load it later without any backend:
+
+1. Enter a name in the **Pattern Name** field and click **Save Pattern**. A JSON file will be downloaded.
+2. Use the file input to load a previously saved pattern. Loaded patterns are stored locally for this session.
+3. When a loaded pattern reappears on the grid it is automatically labelled on the canvas.
+
+Everything runs entirely in the browser so no internet connection is required.
+
 The project is released under the MIT License (see `LICENSE`).

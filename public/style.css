@@ -39,3 +39,19 @@ body {
     margin-top: 4px;
     display: block;
 }
+
+#patternSaver {
+    position: absolute;
+    top: 240px;
+    left: 10px;
+    background: rgba(34, 34, 34, 0.8);
+    padding: 10px;
+    z-index: 10;
+    border-radius: 4px;
+}
+
+#patternSaver input,
+#patternSaver button {
+    margin-top: 4px;
+    display: block;
+}
