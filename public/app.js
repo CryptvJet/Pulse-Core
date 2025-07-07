@@ -171,10 +171,10 @@ function applyTool(r, c) {
         touchedGrid[r][c] = false;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
-        pulses.push({ r, c, remaining: len * 2, color: currentColor });
-        grid[r][c] = 0;
-        colorGrid[r][c] = '#000000';
-        touchedGrid[r][c] = false;
+        grid[r][c] = 1;                 // start active
+        colorGrid[r][c] = currentColor; // display chosen color
+        touchedGrid[r][c] = true;
+        pulses.push({ r, c, remaining: len * 2 - 1, color: currentColor });
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
