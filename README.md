@@ -4,8 +4,8 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 ## Usage
 
-1. Click cells on the grid to activate them. Brushed cells will blink once the
-   simulation starts.
+1. Click cells on the grid to activate them. Each cell stores a color and will
+   evolve based on its neighbors during the simulation.
 2. Press **Start** to run the simulation or **Stop** to pause. You can continue
    editing the grid while the simulation is running.
 3. Adjust **Pulse Speed** and **Zoom** with the sliders.
@@ -17,8 +17,9 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 Use the **Reverse** button to step backward through previous pulses. A color
 picker lets you choose the color for brush strokes, injected pulses and stamped
-patterns. The **Pulse Injector** tool creates explicit pulses, while brushed
-cells simply toggle on each tick.
+patterns. Cells now adopt dominant neighbor colors or blend hues when colors
+conflict, enabling emergent multi-color behavior. The **Pulse Injector** tool
+creates explicit pulses while brushed cells remain active.
 
 This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
 
