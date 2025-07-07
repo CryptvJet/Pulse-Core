@@ -1,39 +1,29 @@
 # Pulse-Core
 
-Yay!
+Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simulation. Open `index.html` in a modern browser and start drawing patterns to see how they evolve.
 
-This project contains a simple pulse simulation playground. Open `index.html` in a browser to try it out.
+## Features
 
-## Usage
+- **Interactive grid** – Click and drag to paint cells even while the simulation runs.
+- **Start/Stop controls** – Run or pause the pulse engine at any time.
+- **Adjustable sliders** – Tune pulse length, fold threshold, zoom level and neighbor count on the fly.
+- **Tool selection** – Switch between brush, eraser, pulse injector and pattern stamper.
+- **Color picker** – Choose the color used for brush strokes, injected pulses and stamped patterns.
+- **Reverse stepping** – Walk backward through up to 200 prior pulses.
+- **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
+- **Optional overlays** – Toggle pulse flash, debug numbers and grid lines.
 
-1. Click and drag on the grid to paint active cells, even while the simulation is running.
-2. Press **Start** to run the simulation or **Stop** to pause.
-3. Adjust **Pulse Length**, **Fold Threshold** and **Zoom** with the sliders. A threshold of 0 disables folding and folded cells appear dark gray. The current fold threshold is shown next to its slider. These values—and **Neighbor Count**—can be changed even while the simulation is running.
-   The grid is capped at 500×500 cells for performance. Zoom levels that would exceed this size are automatically adjusted.
-4. Choose a tool from the **Tool** drop-down:
-   - **Brush** – paint live cells.
-   - **Eraser** – reset cells to 0.
-   - **Pulse Injector** – inject a repeating 0→1→0 signal for the selected **Injector Length** and color.
-   - **Pattern Stamper** – stamp a saved pattern at the clicked location. Use **Save Pattern** to store the current live cells.
-5. Adjust the **Neighbor Count** slider (0–8) to control when a cell becomes active:
-   - **0** – every cell simply flips state each tick.
-   - **1–8** – a cell turns on only when it has exactly that many live neighbors.
-   The chosen value appears next to the slider.
+The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
 
-Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
-The **Pulse Flash** checkbox toggles the brief black-frame effect between pulses. This effect also starts disabled and can be enabled at any time.
-The **Grid Lines** checkbox toggles visible borders between cells.
+## Running the Simulation
 
-This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
+1. Open `index.html` in your browser.
+2. Select a tool and draw directly on the canvas.
+3. Press **Start** to begin pulsing; **Stop** pauses the animation.
+4. Adjust sliders and checkboxes to experiment with different behaviors.
+5. Save your design with **Save Pattern** or restore a previous one with **Upload Pattern**.
 
-## Offline Pattern Saving
-
-You can save the current pattern to a `.json` file and load it later without any backend:
-
-1. Enter a name in the **Pattern Name** field and click **Save Pattern**. A JSON file containing the entire grid will be downloaded.
-2. Choose a saved pattern file with the file input and then click **Upload Pattern** to refresh the grid using its data.
-
-Everything runs entirely in the browser so no internet connection is required.
+Everything happens client-side, so once loaded you can use the tool without an internet connection.
 
 ## Development
 
@@ -48,3 +38,9 @@ npm test
 `npm test` currently outputs a placeholder message but establishes a spot for future tests.
 
 The project is released under the MIT License (see `LICENSE`).
+
+---
+
+<p align="center">
+  <a href="ABOUT.md" target="_blank">About this Web Tool</a>
+</p>
