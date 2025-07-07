@@ -11,7 +11,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Color picker** – Choose the color used for brush strokes, injected pulses and stamped patterns.
 - **Reverse stepping** – Walk backward through up to 200 prior pulses.
 - **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
-- **Optional overlays** – Toggle pulse flash, debug numbers and grid lines.
+- **Optional overlays** – Toggle pulse flash, field tension mapping and grid lines.
 
 The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
 
