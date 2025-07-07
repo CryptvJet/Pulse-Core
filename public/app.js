@@ -20,6 +20,7 @@ const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
+const debugCheckbox = document.getElementById('debugOverlay');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -27,6 +28,7 @@ let rows;
 let cols;
 let grid = [];
 let colorGrid = [];
+let residueGrid = [];
 let running = false;
 let intervalId = null;
 let tool = 'brush';
@@ -36,6 +38,8 @@ let pulseCounter = 0;
 let reverse = false;
 let history = [];
 let neighborThreshold = parseInt(neighborSlider.value);
+let debugOverlay = false;
+let flickerPhase = false;
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -48,15 +52,19 @@ function updateDimensions() {
 function createGrid() {
     grid = [];
     colorGrid = [];
+    residueGrid = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
         const cRow = [];
+        const resRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
             cRow.push(currentColor);
+            resRow.push(0);
         }
         grid.push(row);
         colorGrid.push(cRow);
+        residueGrid.push(resRow);
     }
 }
 
@@ -74,8 +82,16 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            ctx.fillStyle = grid[r][c] === 1 ? colorGrid[r][c] : '#222';
+            if (grid[r][c] === 1) {
+                ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+            } else {
+                ctx.fillStyle = '#222';
+            }
             ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+            if (debugOverlay && grid[r][c] === 0 && getNeighborsSum(r, c) === 0 && neighborThreshold > 0) {
+                ctx.fillStyle = 'rgba(255,0,0,0.3)';
+                ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+            }
         }
     }
 }
@@ -97,6 +113,7 @@ function getNeighborsSum(r, c) {
 // Future folding mechanics can modify the grid here using foldSlider.value
 
 function update() {
+    flickerPhase = !flickerPhase;
     if (reverse) {
         const prev = history.pop();
         if (prev) {
@@ -113,15 +130,48 @@ function update() {
         for (let r = 0; r < rows; r++) {
             const row = [];
             for (let c = 0; c < cols; c++) {
-                if (neighborThreshold === 0) {
-                    row.push(grid[r][c] === 1 ? 0 : 1);
-                } else {
-                    const n = getNeighborsSum(r, c);
-                    row.push(n === neighborThreshold ? 1 : 0);
+                const n = getNeighborsSum(r, c);
+                let val = grid[r][c];
+
+                if (n === 0) {
+                    // isolated cells flicker in place
+                    val = grid[r][c] === 1 ? 0 : 1;
+                } else if (n <= 2) {
+                    // recursive growth with color oscillation
+                    val = 1;
+                } else { // n >= 3
+                    if (grid[r][c] === 1 || residueGrid[r][c] > 0) {
+                        residueGrid[r][c] = Math.max(residueGrid[r][c], 2);
+                    }
+                    val = 0;
                 }
+
+                if (residueGrid[r][c] > 0) {
+                    val = 1;
+                    residueGrid[r][c]--;
+                }
+
+                row.push(val);
             }
             next.push(row);
         }
+
+        // propagate flicker to neighbors
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (next[r][c] !== grid[r][c]) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (dr === 0 && dc === 0) continue;
+                            const nr = (r + dr + rows) % rows;
+                            const nc = (c + dc + cols) % cols;
+                            residueGrid[nr][nc] = Math.max(residueGrid[nr][nc], 1);
+                        }
+                    }
+                }
+            }
+        }
+
         grid = next;
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
@@ -236,6 +286,7 @@ function init() {
     reverseBtn.textContent = 'Reverse';
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;
+    debugOverlay = debugCheckbox.checked;
 }
 
 window.addEventListener('resize', () => {
@@ -267,6 +318,11 @@ colorPicker.addEventListener('input', () => {
 neighborSlider.addEventListener('input', () => {
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;
+});
+
+debugCheckbox.addEventListener('change', () => {
+    debugOverlay = debugCheckbox.checked;
+    drawGrid();
 });
 
 reverseBtn.addEventListener('click', () => {
