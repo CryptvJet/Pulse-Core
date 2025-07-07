@@ -49,10 +49,19 @@ function createGrid() {
         const cRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
-            cRow.push('#00ff00');
+            cRow.push(currentColor);
         }
         grid.push(row);
         colorGrid.push(cRow);
+    }
+}
+
+// Set every cell in colorGrid to the provided color
+function applyColorToGrid(color) {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            colorGrid[r][c] = color;
+        }
     }
 }
 
@@ -229,6 +238,8 @@ savePatternBtn.addEventListener('click', saveCurrentPattern);
 
 colorPicker.addEventListener('input', () => {
     currentColor = colorPicker.value;
+    applyColorToGrid(currentColor);
+    drawGrid();
 });
 
 reverseBtn.addEventListener('click', () => {
