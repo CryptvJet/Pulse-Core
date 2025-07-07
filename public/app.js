@@ -25,6 +25,11 @@ const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
+const aboutLink = document.getElementById('aboutLink');
+const directionsLink = document.getElementById('directionsLink');
+const aboutPopup = document.getElementById('aboutPopup');
+const directionsPopup = document.getElementById('directionsPopup');
+const closeButtons = document.querySelectorAll('.closePopup');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -637,6 +642,40 @@ canvas.addEventListener('mouseleave', stopDrawing);
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
+
+function openPopup(el) {
+    if (el) {
+        el.classList.add('show');
+    }
+}
+
+function closePopup(el) {
+    if (el) {
+        el.classList.remove('show');
+    }
+}
+
+if (aboutLink && aboutPopup) {
+    aboutLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openPopup(aboutPopup);
+    });
+}
+
+if (directionsLink && directionsPopup) {
+    directionsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openPopup(directionsPopup);
+    });
+}
+
+if (closeButtons) {
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            closePopup(btn.parentElement);
+        });
+    });
+}
 
 const menuToggle = document.getElementById('menuToggle');
 const slideMenu = document.getElementById('slideMenu');
