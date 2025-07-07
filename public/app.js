@@ -135,6 +135,7 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
+    const drawSize = Math.max(cellSize - 1, 1);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
@@ -148,7 +149,7 @@ function drawGrid() {
             } else {
                 ctx.fillStyle = '#222';
             }
-            ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+            ctx.fillRect(c * cellSize, r * cellSize, drawSize, drawSize);
 
             if (debugOverlay) {
                 const n = getNeighborsSum(r, c);
@@ -528,6 +529,7 @@ function saveCurrentPattern() {
 function init() {
     updateDimensions();
     createGrid();
+    pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     drawGrid();
     pulseLengthLabel.style.display = 'none';
     patternLabel.style.display = 'none';
@@ -538,7 +540,6 @@ function init() {
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
     patternDetectionEnabled = patternDetectCheckbox ? patternDetectCheckbox.checked : true;
-    pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
 }
 
 window.addEventListener('resize', () => {
