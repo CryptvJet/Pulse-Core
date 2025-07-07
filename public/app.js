@@ -52,6 +52,8 @@ function updateDimensions() {
     rows = Math.floor(window.innerHeight / cellSize);
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
+    canvas.style.width = `${canvas.width}px`;
+    canvas.style.height = `${canvas.height}px`;
 }
 
 // Resize the canvas without recreating the grid
@@ -59,6 +61,8 @@ function updateCanvasSize() {
     cellSize = parseInt(zoomSlider.value);
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
+    canvas.style.width = `${canvas.width}px`;
+    canvas.style.height = `${canvas.height}px`;
 }
 
 function createGrid() {
