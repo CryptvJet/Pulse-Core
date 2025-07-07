@@ -25,7 +25,6 @@
             <input type="range" id="neighborSlider" min="0" max="8" step="1" value="2">
         </label>
         <label><input type="checkbox" id="debugOverlay"> Debug Overlay</label>
-        <label><input type="checkbox" id="patternDetect"> Detect Patterns</label>
         <label><input type="checkbox" id="pulseFlash"> Pulse Flash</label>
     </div>
 
@@ -48,7 +47,8 @@
     <div id="patternSaver">
         <input type="text" id="patternName" placeholder="Pattern Name">
         <button onclick="saveCurrentPattern()">💾 Save Pattern</button>
-        <input type="file" id="patternLoader" accept=".json" onchange="loadPatternFile(this)">
+        <input type="file" id="patternLoader" accept=".json" onchange="handlePatternSelection(this)">
+        <button id="patternUploadBtn" onclick="uploadPattern()" style="display:none">Upload Pattern</button>
     </div>
     <canvas id="grid"></canvas>
 

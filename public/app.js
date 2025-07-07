@@ -21,8 +21,9 @@ const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
 const debugCheckbox = document.getElementById('debugOverlay');
-const patternDetectCheckbox = document.getElementById('patternDetect');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
+const patternLoader = document.getElementById('patternLoader');
+const patternUploadBtn = document.getElementById('patternUploadBtn');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -39,7 +40,6 @@ let intervalId = null;
 let tool = 'brush';
 let pulses = [];
 let patterns = [];
-let knownPatterns = {};
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
@@ -48,9 +48,7 @@ let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 // Maximum row/column count before zoom is restricted. Increase at your own risk
 const MAX_DIMENSION = 500;
-const PATTERN_CHECK_INTERVAL = 5;
-const PATTERN_CELL_THRESHOLD = 100000;
-let patternDetectionEnabled = true;
+
 let pulseFlash = true;
 
 function updateDimensions() {
@@ -286,13 +284,6 @@ function update() {
         pulseCounter++;
     }
     drawGrid();
-    if (
-        patternDetectionEnabled &&
-        rows * cols <= PATTERN_CELL_THRESHOLD &&
-        pulseCounter % PATTERN_CHECK_INTERVAL === 0
-    ) {
-        detectPatternsInGrid();
-    }
     pulseCounterSpan.textContent = pulseCounter;
 }
 
@@ -315,56 +306,62 @@ function extractPatternSubgrid(centerR, centerC, size) {
     return subgrid;
 }
 
-function loadPatternFile(input) {
-    const file = input.files[0];
-    if (!file) return;
 
+let selectedPatternFile = null;
+
+function handlePatternSelection(input) {
+    selectedPatternFile = input.files[0] || null;
+    if (selectedPatternFile) {
+        patternUploadBtn.style.display = 'block';
+    } else {
+        patternUploadBtn.style.display = 'none';
+    }
+}
+
+function uploadPattern() {
+    if (!selectedPatternFile) return;
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
-            const pattern = JSON.parse(e.target.result);
-            if (pattern.name && pattern.pattern) {
-                knownPatterns[pattern.name] = pattern;
-                console.log(`\u2705 Pattern '${pattern.name}' loaded.`);
-            } else {
-                alert('Invalid pattern file.');
-            }
+            const data = JSON.parse(e.target.result);
+            applyPatternData(data);
         } catch (err) {
             alert('Error parsing pattern file.');
         }
     };
-    reader.readAsText(file);
+    reader.readAsText(selectedPatternFile);
+    patternUploadBtn.style.display = 'none';
+    patternLoader.value = '';
+    selectedPatternFile = null;
 }
 
-function comparePattern(sub, reference) {
-    if (sub.length !== reference.length) return false;
-    for (let i = 0; i < sub.length; i++) {
-        for (let j = 0; j < sub[i].length; j++) {
-            if (sub[i][j] !== reference[i][j]) return false;
-        }
+function applyPatternData(data) {
+    if (!data.pattern || !Array.isArray(data.pattern)) {
+        alert('Invalid pattern file.');
+        return;
     }
-    return true;
-}
-
-function detectPatternsInGrid() {
-    const size = 10;
-    for (let r = size; r < rows - size; r++) {
-        for (let c = size; c < cols - size; c++) {
-            const sub = extractPatternSubgrid(r, c, size);
-            for (const name in knownPatterns) {
-                if (comparePattern(sub, knownPatterns[name].pattern)) {
-                    labelPattern(r, c, name);
+    clearGrid();
+    const size = data.pattern.length;
+    const half = Math.floor(size / 2);
+    const pos = data.position || [Math.floor(rows / 2), Math.floor(cols / 2)];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            const val = data.pattern[r][c];
+            const gr = pos[0] - half + r;
+            const gc = pos[1] - half + c;
+            if (gr >= 0 && gr < rows && gc >= 0 && gc < cols) {
+                grid[gr][gc] = val;
+                if (val === 1) {
+                    colorGrid[gr][gc] = currentColor;
                 }
             }
         }
     }
+    pulseCounter = data.pulse || 0;
+    pulseCounterSpan.textContent = pulseCounter;
+    drawGrid();
 }
 
-function labelPattern(r, c, label) {
-    ctx.font = '10px monospace';
-    ctx.fillStyle = '#FFD700';
-    ctx.fillText(label, c * cellSize + 5, r * cellSize - 5);
-}
 
 function applyTool(r, c) {
     if (tool === 'brush') {
@@ -518,7 +515,6 @@ function saveCurrentPattern() {
     a.click();
     URL.revokeObjectURL(url);
 
-    knownPatterns[name] = data;
     nameInput.value = '';
 }
 
@@ -535,7 +531,6 @@ function init() {
     neighborValueSpan.textContent = neighborSlider.value;
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
-    patternDetectionEnabled = patternDetectCheckbox ? patternDetectCheckbox.checked : true;
 }
 
 window.addEventListener('resize', () => {
@@ -591,11 +586,6 @@ if (pulseFlashCheckbox) {
     });
 }
 
-if (patternDetectCheckbox) {
-    patternDetectCheckbox.addEventListener('change', () => {
-        patternDetectionEnabled = patternDetectCheckbox.checked;
-    });
-}
 
 reverseBtn.addEventListener('click', () => {
     reverse = !reverse;

@@ -21,7 +21,6 @@ This project contains a simple pulse simulation playground. Open `index.html` in
    The chosen value appears next to the slider.
 
 Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
-Pattern detection runs automatically every few pulses but is skipped on very large grids. It is disabled by default; use the **Detect Patterns** checkbox to enable it.
 The **Pulse Flash** checkbox toggles the brief black-frame effect between pulses. This effect also starts disabled and can be enabled at any time.
 
 This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
@@ -31,8 +30,7 @@ This scaffolding separates UI from simulation logic to allow future growth. Upco
 You can save the current pattern to a `.json` file and load it later without any backend:
 
 1. Enter a name in the **Pattern Name** field and click **Save Pattern**. A JSON file will be downloaded.
-2. Use the file input to load a previously saved pattern. Loaded patterns are stored locally for this session.
-3. When a loaded pattern reappears on the grid it is automatically labelled on the canvas.
+2. Choose a saved pattern file with the file input and then click **Upload Pattern** to refresh the grid using its data.
 
 Everything runs entirely in the browser so no internet connection is required.
 
