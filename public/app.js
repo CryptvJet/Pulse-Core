@@ -33,6 +33,7 @@ let patterns = [];
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
+const HISTORY_LIMIT = 100;
 
 function invertColor(hex) {
     const h = hex.replace('#', '');
@@ -113,14 +114,19 @@ function update() {
             grid = prev.grid;
             colorGrid = prev.colorGrid;
             touchedGrid = prev.touchedGrid;
+            pulses = prev.pulses;
             pulseCounter--;
         }
     } else {
         history.push({
             grid: JSON.parse(JSON.stringify(grid)),
             colorGrid: JSON.parse(JSON.stringify(colorGrid)),
-            touchedGrid: JSON.parse(JSON.stringify(touchedGrid))
+            touchedGrid: JSON.parse(JSON.stringify(touchedGrid)),
+            pulses: JSON.parse(JSON.stringify(pulses))
         });
+        if (history.length > HISTORY_LIMIT) {
+            history.shift();
+        }
         // Clone the current grid so we can apply pulses without altering
         // the original during iteration.
         const next = grid.map(row => row.slice());
@@ -157,9 +163,9 @@ function applyTool(r, c) {
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
-        grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
-        touchedGrid[r][c] = true;
+        grid[r][c] = 0;
+        colorGrid[r][c] = '#000000';
+        touchedGrid[r][c] = false;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
