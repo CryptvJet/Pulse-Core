@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
-const tickSpeedSlider = document.getElementById('tickSpeedSlider');
+const speedSlider = document.getElementById('speedSlider');
 const foldSlider = document.getElementById('foldSlider');
 const foldValueSpan = document.getElementById('foldValue');
 const zoomSlider = document.getElementById('zoomSlider');
@@ -342,7 +342,7 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    const speed = parseInt(tickSpeedSlider.value);
+    const speed = parseInt(speedSlider.value);
     intervalId = setInterval(update, speed);
 }
 
@@ -435,10 +435,10 @@ foldSlider.addEventListener('input', () => {
     foldValueSpan.textContent = foldSlider.value;
 });
 
-tickSpeedSlider.addEventListener('input', () => {
+speedSlider.addEventListener('input', () => {
     if (running) {
         clearInterval(intervalId);
-        const speed = parseInt(tickSpeedSlider.value);
+        const speed = parseInt(speedSlider.value);
         intervalId = setInterval(update, speed);
     }
 });
