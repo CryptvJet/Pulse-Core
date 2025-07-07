@@ -14,10 +14,9 @@ This project contains a simple pulse simulation playground. Open `index.html` in
    - **Eraser** – reset cells to 0.
    - **Pulse Injector** – inject a repeating 0→1→0 signal for the selected **Injector Length** and color.
    - **Pattern Stamper** – stamp a saved pattern at the clicked location. Use **Save Pattern** to store the current live cells.
-5. Choose the **Mode**:
-   - **pulse** – cells only change from injected pulses or manual edits.
-   - **neighbor** – each step turns on a cell when the number of active neighbors matches the **Neighbor Count** setting.
-6. Select the **Neighbor Count** from 0–8 to control how many active neighbors are required for a cell to activate.
+5. Adjust the **Neighbor Count** slider (0–8) to control when a cell becomes active:
+   - **0** – every cell simply flips state each tick.
+   - **1–8** – a cell turns on only when it has exactly that many live neighbors.
 
 Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
 
