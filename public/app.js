@@ -145,6 +145,7 @@ function applyTool(r, c) {
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
+        grid[r][c] = 1; // Ensure the pulse cell is active immediately
         colorGrid[r][c] = currentColor;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
