@@ -399,11 +399,6 @@ function applyTool(r, c) {
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
-    } else if (tool === 'eraser') {
-        grid[r][c] = 0;
-        foldGrid[r][c] = 0;
-        lastStateGrid[r][c] = 0;
-        flickerCountGrid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
@@ -430,6 +425,14 @@ function applyTool(r, c) {
     }
     drawGrid();
 }
+
+function eraseCell(r, c) {
+    grid[r][c] = 0;
+    foldGrid[r][c] = 0;
+    lastStateGrid[r][c] = 0;
+    flickerCountGrid[r][c] = 0;
+    drawGrid();
+}
 // UI handlers
 
 let isDrawing = false;
@@ -448,16 +451,23 @@ function getCellFromEvent(event) {
 function toggleCell(event) {
     const { r, c } = getCellFromEvent(event);
     if (r >= 0 && r < rows && c >= 0 && c < cols) {
-        applyTool(r, c);
+        const rightClick = event.buttons === 2 || event.button === 2;
+        if (rightClick) {
+            eraseCell(r, c);
+        } else {
+            applyTool(r, c);
+        }
     }
 }
 
 function startDrawing(event) {
+    event.preventDefault();
     isDrawing = true;
     toggleCell(event);
 }
 
 function drawIfNeeded(event) {
+    event.preventDefault();
     if (!isDrawing) return;
     toggleCell(event);
 }
@@ -639,6 +649,7 @@ canvas.addEventListener('mousedown', startDrawing);
 canvas.addEventListener('mousemove', drawIfNeeded);
 canvas.addEventListener('mouseup', stopDrawing);
 canvas.addEventListener('mouseleave', stopDrawing);
+canvas.addEventListener('contextmenu', e => e.preventDefault());
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
