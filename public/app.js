@@ -53,6 +53,13 @@ function updateDimensions() {
     canvas.height = rows * cellSize;
 }
 
+// Resize the canvas without recreating the grid
+function updateCanvasSize() {
+    cellSize = parseInt(zoomSlider.value);
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+}
+
 function createGrid() {
     grid = [];
     colorGrid = [];
@@ -376,8 +383,7 @@ window.addEventListener('resize', () => {
 });
 
 zoomSlider.addEventListener('input', () => {
-    updateDimensions();
-    createGrid();
+    updateCanvasSize();
     drawGrid();
 });
 
@@ -402,6 +408,14 @@ neighborSlider.addEventListener('input', () => {
 
 foldSlider.addEventListener('input', () => {
     foldValueSpan.textContent = foldSlider.value;
+});
+
+speedSlider.addEventListener('input', () => {
+    if (running) {
+        clearInterval(intervalId);
+        const speed = parseInt(speedSlider.value);
+        intervalId = setInterval(update, speed);
+    }
 });
 
 debugCheckbox.addEventListener('change', () => {
