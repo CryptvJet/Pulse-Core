@@ -6,7 +6,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 1. Click cells on the grid to activate them.
 2. Press **Start** to run the simulation or **Stop** to pause.
-3. Adjust **Pulse Length** and **Zoom** with the sliders.
+3. Adjust **Pulse Speed** and **Zoom** with the sliders.
 4. Choose a tool from the **Tool** drop-down:
    - **Brush** – paint live cells.
    - **Eraser** – reset cells to 0.
