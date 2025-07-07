@@ -18,8 +18,7 @@ const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
-const modeSelect = document.getElementById('modeSelect');
-const neighborSelect = document.getElementById('neighborSelect');
+const neighborSlider = document.getElementById('neighborSlider');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -35,8 +34,7 @@ let patterns = [];
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
-let mode = 'pulse';
-let neighborThreshold = parseInt(neighborSelect.value);
+let neighborThreshold = parseInt(neighborSlider.value);
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -81,11 +79,12 @@ function drawGrid() {
     }
 }
 
+// Return the total of all eight neighbors around (r, c)
 function getNeighborsSum(r, c) {
     let sum = 0;
     for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
+            if (dr === 0 && dc === 0) continue; // skip the cell itself
             const nr = (r + dr + rows) % rows;
             const nc = (c + dc + cols) % cols;
             sum += grid[nr][nc];
@@ -93,7 +92,7 @@ function getNeighborsSum(r, c) {
     }
     return sum;
 }
-// Update all cells based on the flicker rule f(n) = (n + 1)^2 % 2
+// Update all cells based on the neighbor threshold
 // Future folding mechanics can modify the grid here using foldSlider.value
 
 function update() {
@@ -110,19 +109,17 @@ function update() {
             colorGrid: JSON.parse(JSON.stringify(colorGrid))
         });
         let next = [];
-        if (mode === 'neighbor') {
-            for (let r = 0; r < rows; r++) {
-                const row = [];
-                for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+            const row = [];
+            for (let c = 0; c < cols; c++) {
+                if (neighborThreshold === 0) {
+                    row.push(grid[r][c] === 1 ? 0 : 1);
+                } else {
                     const n = getNeighborsSum(r, c);
                     row.push(n === neighborThreshold ? 1 : 0);
                 }
-                next.push(row);
             }
-        } else {
-            for (let r = 0; r < rows; r++) {
-                next.push([...grid[r]]);
-            }
+            next.push(row);
         }
         grid = next;
         pulses.forEach(p => {
@@ -236,8 +233,7 @@ function init() {
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
-    mode = modeSelect.value;
-    neighborThreshold = parseInt(neighborSelect.value);
+    neighborThreshold = parseInt(neighborSlider.value);
 }
 
 window.addEventListener('resize', () => {
@@ -266,12 +262,8 @@ colorPicker.addEventListener('input', () => {
     drawGrid();
 });
 
-modeSelect.addEventListener('change', () => {
-    mode = modeSelect.value;
-});
-
-neighborSelect.addEventListener('change', () => {
-    neighborThreshold = parseInt(neighborSelect.value);
+neighborSlider.addEventListener('input', () => {
+    neighborThreshold = parseInt(neighborSlider.value);
 });
 
 reverseBtn.addEventListener('click', () => {
