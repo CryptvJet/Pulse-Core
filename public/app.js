@@ -29,6 +29,7 @@ let cols;
 let grid = [];
 let colorGrid = [];
 let residueGrid = [];
+let foldGrid = [];
 let running = false;
 let intervalId = null;
 let tool = 'brush';
@@ -53,18 +54,22 @@ function createGrid() {
     grid = [];
     colorGrid = [];
     residueGrid = [];
+    foldGrid = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
         const cRow = [];
         const resRow = [];
+        const foldRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
             cRow.push(currentColor);
             resRow.push(0);
+            foldRow.push(0);
         }
         grid.push(row);
         colorGrid.push(cRow);
         residueGrid.push(resRow);
+        foldGrid.push(foldRow);
     }
 }
 
@@ -84,6 +89,8 @@ function drawGrid() {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
                 ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+            } else if (foldGrid[r][c] === 1) {
+                ctx.fillStyle = '#111';
             } else {
                 ctx.fillStyle = '#222';
             }
@@ -114,6 +121,7 @@ function getNeighborsSum(r, c) {
 
 function update() {
     flickerPhase = !flickerPhase;
+    const foldThreshold = parseInt(foldSlider.value);
     if (reverse) {
         const prev = history.pop();
         if (prev) {
@@ -127,23 +135,31 @@ function update() {
             colorGrid: JSON.parse(JSON.stringify(colorGrid))
         });
         let next = [];
+        let nextFold = [];
         for (let r = 0; r < rows; r++) {
             const row = [];
+            const foldRow = [];
             for (let c = 0; c < cols; c++) {
                 const n = getNeighborsSum(r, c);
                 let val = grid[r][c];
+                let folded = false;
 
-                if (n === 0) {
-                    // isolated cells flicker in place
-                    val = grid[r][c] === 1 ? 0 : 1;
-                } else if (n <= 2) {
-                    // recursive growth with color oscillation
-                    val = 1;
-                } else { // n >= 3
-                    if (grid[r][c] === 1 || residueGrid[r][c] > 0) {
-                        residueGrid[r][c] = Math.max(residueGrid[r][c], 2);
-                    }
+                if (foldThreshold > 0 && n > foldThreshold) {
                     val = 0;
+                    folded = true;
+                } else {
+                    if (n === 0) {
+                        // isolated cells flicker in place
+                        val = grid[r][c] === 1 ? 0 : 1;
+                    } else if (n <= 2) {
+                        // recursive growth with color oscillation
+                        val = 1;
+                    } else { // n >= 3
+                        if (grid[r][c] === 1 || residueGrid[r][c] > 0) {
+                            residueGrid[r][c] = Math.max(residueGrid[r][c], 2);
+                        }
+                        val = 0;
+                    }
                 }
 
                 if (residueGrid[r][c] > 0) {
@@ -152,8 +168,10 @@ function update() {
                 }
 
                 row.push(val);
+                foldRow.push(folded ? 1 : 0);
             }
             next.push(row);
+            nextFold.push(foldRow);
         }
 
         // propagate flicker to neighbors
@@ -173,10 +191,12 @@ function update() {
         }
 
         grid = next;
+        foldGrid = nextFold;
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
                 grid[p.r][p.c] = p.remaining % 2;
                 colorGrid[p.r][p.c] = p.color;
+                foldGrid[p.r][p.c] = 0;
                 p.remaining--;
             }
         });
@@ -191,13 +211,16 @@ function applyTool(r, c) {
     if (tool === 'brush') {
         grid[r][c] = 1;
         colorGrid[r][c] = currentColor;
+        foldGrid[r][c] = 0;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
+        foldGrid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
         grid[r][c] = 1; // Ensure the pulse cell is active immediately
         colorGrid[r][c] = currentColor;
+        foldGrid[r][c] = 0;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -206,6 +229,7 @@ function applyTool(r, c) {
                 const nc = (c + dc + cols) % cols;
                 grid[nr][nc] = 1;
                 colorGrid[nr][nc] = currentColor;
+                foldGrid[nr][nc] = 0;
             });
         }
     }
