@@ -1,21 +1,26 @@
 body {
     margin: 0;
-    display: flex;
-    flex-direction: column;
     height: 100vh;
+    overflow: hidden;
     background-color: #111;
     color: #eee;
     font-family: Arial, sans-serif;
+    position: relative;
 }
 
 #controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(34, 34, 34, 0.8);
     padding: 10px;
-    background: #222;
+    z-index: 10;
+    border-radius: 4px;
 }
 
 #grid {
-    flex: 1;
-    width: 100%;
+    width: 100vw;
+    height: 100vh;
     background: #000;
     display: block;
 }
