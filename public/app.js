@@ -141,9 +141,11 @@ function getNeighborsSum(r, c) {
     for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
             if (dr === 0 && dc === 0) continue; // skip the cell itself
-            const nr = (r + dr + rows) % rows;
-            const nc = (c + dc + cols) % cols;
-            sum += grid[nr][nc];
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                sum += grid[nr][nc];
+            }
         }
     }
     return sum;
@@ -236,9 +238,11 @@ function update() {
                     for (let dr = -1; dr <= 1; dr++) {
                         for (let dc = -1; dc <= 1; dc++) {
                             if (dr === 0 && dc === 0) continue;
-                            const nr = (r + dr + rows) % rows;
-                            const nc = (c + dc + cols) % cols;
-                            residueGrid[nr][nc] = Math.max(residueGrid[nr][nc], 1);
+                            const nr = r + dr;
+                            const nc = c + dc;
+                            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                                residueGrid[nr][nc] = Math.max(residueGrid[nr][nc], 1);
+                            }
                         }
                     }
                 }
@@ -360,13 +364,15 @@ function applyTool(r, c) {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
             pattern.cells.forEach(([dr, dc]) => {
-                const nr = (r + dr + rows) % rows;
-                const nc = (c + dc + cols) % cols;
-                grid[nr][nc] = 1;
-                colorGrid[nr][nc] = currentColor;
-                foldGrid[nr][nc] = 0;
-                lastStateGrid[nr][nc] = 1;
-                flickerCountGrid[nr][nc] = 0;
+                const nr = r + dr;
+                const nc = c + dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                    grid[nr][nc] = 1;
+                    colorGrid[nr][nc] = currentColor;
+                    foldGrid[nr][nc] = 0;
+                    lastStateGrid[nr][nc] = 1;
+                    flickerCountGrid[nr][nc] = 0;
+                }
             });
         }
     }
