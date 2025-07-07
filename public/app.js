@@ -5,6 +5,7 @@ const canvas = document.getElementById('grid');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
+const clearBtn = document.getElementById('clearBtn');
 const speedSlider = document.getElementById('speedSlider');
 const foldSlider = document.getElementById('foldSlider');
 const zoomSlider = document.getElementById('zoomSlider');
@@ -191,6 +192,16 @@ function stop() {
     clearInterval(intervalId);
 }
 
+function clearGrid() {
+    stop();
+    createGrid();
+    pulses = [];
+    history = [];
+    pulseCounter = 0;
+    pulseCounterSpan.textContent = pulseCounter;
+    drawGrid();
+}
+
 function saveCurrentPattern() {
     const cells = [];
     let minR = rows, minC = cols;
@@ -263,6 +274,7 @@ reverseBtn.addEventListener('click', () => {
 canvas.addEventListener('click', toggleCell);
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
+clearBtn.addEventListener('click', clearGrid);
 
 init();
 // Additional hooks for pulse direction and substrate density will be added later.
