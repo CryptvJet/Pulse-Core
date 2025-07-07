@@ -407,7 +407,8 @@ window.addEventListener('resize', () => {
 });
 
 zoomSlider.addEventListener('input', () => {
-    updateCanvasSize();
+    updateDimensions();
+    createGrid();
     drawGrid();
 });
 
