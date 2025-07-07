@@ -46,7 +46,6 @@ let history = [];
 const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
-let flickerPhase = false;
 const MAX_DIMENSION = 250;
 let zoomWarningShown = false;
 const PATTERN_CHECK_INTERVAL = 5;
@@ -139,8 +138,8 @@ function drawGrid() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
-                if (running && pulseFlash) {
-                    ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+                if (running && pulseFlash && flickerCountGrid[r][c] > 0) {
+                    ctx.fillStyle = '#000';
                 } else {
                     ctx.fillStyle = colorGrid[r][c];
                 }
@@ -220,7 +219,6 @@ function updateCellState(r, c, n, foldThreshold) {
 // Future folding mechanics can modify the grid here using foldSlider.value
 
 function update() {
-    flickerPhase = !flickerPhase;
     const foldThreshold = parseInt(foldSlider.value);
     if (reverse) {
         const prev = history.pop();
@@ -378,7 +376,6 @@ function applyTool(r, c) {
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
-        flickerPhase = true;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
         foldGrid[r][c] = 0;
