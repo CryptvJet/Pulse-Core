@@ -23,6 +23,7 @@ const neighborValueSpan = document.getElementById('neighborValue');
 const debugCheckbox = document.getElementById('debugOverlay');
 const patternDetectCheckbox = document.getElementById('patternDetect');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
+const gridLinesCheckbox = document.getElementById('gridLines');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -52,6 +53,7 @@ const PATTERN_CHECK_INTERVAL = 5;
 const PATTERN_CELL_THRESHOLD = 100000;
 let patternDetectionEnabled = true;
 let pulseFlash = true;
+let showGridLines = true;
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -131,7 +133,7 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
-    const drawSize = Math.max(cellSize - 1, 1);
+    const drawSize = showGridLines ? Math.max(cellSize - 1, 1) : cellSize;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
@@ -526,6 +528,7 @@ function init() {
     updateDimensions();
     createGrid();
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
+    showGridLines = gridLinesCheckbox ? gridLinesCheckbox.checked : true;
     drawGrid();
     pulseLengthLabel.style.display = 'none';
     patternLabel.style.display = 'none';
@@ -587,6 +590,13 @@ debugCheckbox.addEventListener('change', () => {
 if (pulseFlashCheckbox) {
     pulseFlashCheckbox.addEventListener('change', () => {
         pulseFlash = pulseFlashCheckbox.checked;
+        drawGrid();
+    });
+}
+
+if (gridLinesCheckbox) {
+    gridLinesCheckbox.addEventListener('change', () => {
+        showGridLines = gridLinesCheckbox.checked;
         drawGrid();
     });
 }
