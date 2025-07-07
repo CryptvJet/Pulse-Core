@@ -638,5 +638,13 @@ startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
 
+const menuToggle = document.getElementById('menuToggle');
+const slideMenu = document.getElementById('slideMenu');
+if (menuToggle && slideMenu) {
+    menuToggle.addEventListener('click', () => {
+        slideMenu.classList.toggle('open');
+    });
+}
+
 init();
 // Additional hooks for pulse direction and substrate density will be added later.
