@@ -8,6 +8,7 @@ const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
 const speedSlider = document.getElementById('speedSlider');
 const foldSlider = document.getElementById('foldSlider');
+const foldValueSpan = document.getElementById('foldValue');
 const zoomSlider = document.getElementById('zoomSlider');
 const toolSelect = document.getElementById('toolSelect');
 const pulseLengthInput = document.getElementById('pulseLength');
@@ -364,6 +365,7 @@ function init() {
     reverseBtn.textContent = 'Reverse';
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;
+    foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
 }
 
@@ -396,6 +398,10 @@ colorPicker.addEventListener('input', () => {
 neighborSlider.addEventListener('input', () => {
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;
+});
+
+foldSlider.addEventListener('input', () => {
+    foldValueSpan.textContent = foldSlider.value;
 });
 
 debugCheckbox.addEventListener('change', () => {
