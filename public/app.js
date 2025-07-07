@@ -30,6 +30,8 @@ let grid = [];
 let colorGrid = [];
 let residueGrid = [];
 let foldGrid = [];
+let flickerCountGrid = [];
+let lastStateGrid = [];
 let running = false;
 let intervalId = null;
 let tool = 'brush';
@@ -55,21 +57,29 @@ function createGrid() {
     colorGrid = [];
     residueGrid = [];
     foldGrid = [];
+    flickerCountGrid = [];
+    lastStateGrid = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
         const cRow = [];
         const resRow = [];
         const foldRow = [];
+        const flickerRow = [];
+        const lastRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
             cRow.push(currentColor);
             resRow.push(0);
             foldRow.push(0);
+            flickerRow.push(0);
+            lastRow.push(0);
         }
         grid.push(row);
         colorGrid.push(cRow);
         residueGrid.push(resRow);
         foldGrid.push(foldRow);
+        flickerCountGrid.push(flickerRow);
+        lastStateGrid.push(lastRow);
     }
 }
 
@@ -153,15 +163,10 @@ function update() {
                 let val = grid[r][c];
                 let folded = false;
 
-                if (foldThreshold > 0 && n > foldThreshold) {
-                    val = 0;
-                    folded = true;
+                if (neighborThreshold === 0) {
+                    val = grid[r][c] ? 0 : 1;
                 } else {
-                    if (neighborThreshold === 0) {
-                        val = grid[r][c] ? 0 : 1;
-                    } else {
-                        val = n === neighborThreshold ? 1 : 0;
-                    }
+                    val = n === neighborThreshold ? 1 : 0;
                 }
 
                 if (residueGrid[r][c] > 0) {
@@ -169,11 +174,24 @@ function update() {
                     residueGrid[r][c]--;
                 }
 
+                if (val !== lastStateGrid[r][c]) {
+                    flickerCountGrid[r][c] += 1;
+                } else {
+                    flickerCountGrid[r][c] = 0;
+                }
+
+                if (foldThreshold > 0 && (n > foldThreshold || flickerCountGrid[r][c] >= foldThreshold)) {
+                    val = 0;
+                    folded = true;
+                    flickerCountGrid[r][c] = 0;
+                }
+
                 if (debugOverlay) {
                     console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
                 }
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
+                lastStateGrid[r][c] = val;
             }
             next.push(row);
             nextFold.push(foldRow);
@@ -202,6 +220,8 @@ function update() {
                 grid[p.r][p.c] = p.remaining % 2;
                 colorGrid[p.r][p.c] = p.color;
                 foldGrid[p.r][p.c] = 0;
+                lastStateGrid[p.r][p.c] = grid[p.r][p.c];
+                flickerCountGrid[p.r][p.c] = 0;
                 p.remaining--;
             }
         });
@@ -217,16 +237,22 @@ function applyTool(r, c) {
         grid[r][c] = 1;
         colorGrid[r][c] = currentColor;
         foldGrid[r][c] = 0;
+        lastStateGrid[r][c] = 1;
+        flickerCountGrid[r][c] = 0;
         flickerPhase = true;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
         foldGrid[r][c] = 0;
+        lastStateGrid[r][c] = 0;
+        flickerCountGrid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
         grid[r][c] = 1; // Ensure the pulse cell is active immediately
         colorGrid[r][c] = currentColor;
         foldGrid[r][c] = 0;
+        lastStateGrid[r][c] = 1;
+        flickerCountGrid[r][c] = 0;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -236,6 +262,8 @@ function applyTool(r, c) {
                 grid[nr][nc] = 1;
                 colorGrid[nr][nc] = currentColor;
                 foldGrid[nr][nc] = 0;
+                lastStateGrid[nr][nc] = 1;
+                flickerCountGrid[nr][nc] = 0;
             });
         }
     }
