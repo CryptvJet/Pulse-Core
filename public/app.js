@@ -17,6 +17,7 @@ const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
+const modeSelect = document.getElementById('modeSelect');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -32,6 +33,7 @@ let patterns = [];
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
+let mode = 'pulse';
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -104,14 +106,20 @@ function update() {
             grid: JSON.parse(JSON.stringify(grid)),
             colorGrid: JSON.parse(JSON.stringify(colorGrid))
         });
-        const next = [];
-        for (let r = 0; r < rows; r++) {
-            const row = [];
-            for (let c = 0; c < cols; c++) {
-                const n = getNeighborsSum(r, c);
-                row.push(((n + 1) ** 2) % 2);
+        let next = [];
+        if (mode === 'neighbor') {
+            for (let r = 0; r < rows; r++) {
+                const row = [];
+                for (let c = 0; c < cols; c++) {
+                    const n = getNeighborsSum(r, c);
+                    row.push(((n + 1) ** 2) % 2);
+                }
+                next.push(row);
             }
-            next.push(row);
+        } else {
+            for (let r = 0; r < rows; r++) {
+                next.push([...grid[r]]);
+            }
         }
         grid = next;
         pulses.forEach(p => {
@@ -214,6 +222,7 @@ function init() {
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
+    mode = modeSelect.value;
 }
 
 window.addEventListener('resize', () => {
@@ -240,6 +249,10 @@ colorPicker.addEventListener('input', () => {
     currentColor = colorPicker.value;
     applyColorToGrid(currentColor);
     drawGrid();
+});
+
+modeSelect.addEventListener('change', () => {
+    mode = modeSelect.value;
 });
 
 reverseBtn.addEventListener('click', () => {
