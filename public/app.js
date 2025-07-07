@@ -157,6 +157,7 @@ function applyTool(r, c) {
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
+        grid[r][c] = 1;
         colorGrid[r][c] = currentColor;
         touchedGrid[r][c] = true;
     } else if (tool === 'stamper') {
