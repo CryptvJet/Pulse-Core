@@ -38,6 +38,10 @@ body {
     display: flex;
     gap: 6px;
     margin-top: 4px;
+    margin-bottom: 0;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
 }
 #infoLinks a {
     color: #fff;
