@@ -30,7 +30,7 @@ This scaffolding separates UI from simulation logic to allow future growth. Upco
 
 You can save the current pattern to a `.json` file and load it later without any backend:
 
-1. Enter a name in the **Pattern Name** field and click **Save Pattern**. A JSON file will be downloaded.
+1. Enter a name in the **Pattern Name** field and click **Save Pattern**. A JSON file containing the entire grid will be downloaded.
 2. Choose a saved pattern file with the file input and then click **Upload Pattern** to refresh the grid using its data.
 
 Everything runs entirely in the browser so no internet connection is required.
