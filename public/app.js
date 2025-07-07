@@ -21,6 +21,7 @@ const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
 const debugCheckbox = document.getElementById('debugOverlay');
+const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
@@ -52,6 +53,7 @@ let history = [];
 const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
+let fieldTensionMode = 'none';
 let showGridLines = true;
 // Maximum row/column count before zoom is restricted. Increase at your own risk
 const MAX_DIMENSION = 500;
@@ -160,6 +162,15 @@ function drawGrid() {
             }
         }
     }
+    if (fieldTensionMode !== 'none') {
+        drawFieldTensionOverlay(fieldTensionMode);
+    }
+}
+
+// Stub for rendering different field tension overlays
+function drawFieldTensionOverlay(mode) {
+    // Implement overlay logic for each mode here
+    console.log('Field Tension Mapping mode set to:', mode);
 }
 
 // Return the total of all eight neighbors around (r, c)
@@ -577,6 +588,7 @@ function init() {
     neighborValueSpan.textContent = neighborSlider.value;
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
+    fieldTensionMode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
 }
 
 window.addEventListener('resize', () => {
@@ -623,6 +635,13 @@ debugCheckbox.addEventListener('change', () => {
     debugOverlay = debugCheckbox.checked;
     drawGrid();
 });
+
+if (fieldTensionDropdown) {
+    fieldTensionDropdown.addEventListener('change', () => {
+        fieldTensionMode = fieldTensionDropdown.value;
+        drawFieldTensionOverlay(fieldTensionMode);
+    });
+}
 
 if (pulseFlashCheckbox) {
     pulseFlashCheckbox.addEventListener('change', () => {
