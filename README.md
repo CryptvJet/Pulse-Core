@@ -16,7 +16,8 @@ This project contains a simple pulse simulation playground. Open `index.html` in
    - **Pattern Stamper** – stamp a saved pattern at the clicked location. Use **Save Pattern** to store the current live cells.
 5. Choose the **Mode**:
    - **pulse** – cells only change from injected pulses or manual edits.
-   - **neighbor** – each step applies `f(n) = ((n + 1)^2) % 2` using the cell and its neighbors.
+   - **neighbor** – each step turns on a cell when the number of active neighbors matches the **Neighbor Count** setting.
+6. Select the **Neighbor Count** from 0–8 to control how many active neighbors are required for a cell to activate.
 
 Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
 
