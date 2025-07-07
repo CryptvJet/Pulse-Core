@@ -11,17 +11,21 @@
     <button id="menuToggle">Menu</button>
     <div id="slideMenu">
     <div id="controls">
-        <button id="startBtn">Start</button>
-        <button id="stopBtn" disabled>Stop</button>
-        <button id="clearBtn">Clear</button>
+        <div id="controlButtons" class="controlRow">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn" disabled>Stop</button>
+            <button id="clearBtn">Clear</button>
+        </div>
+        <div id="pulseRow" class="controlRow">
+            <div id="pulseCounterDisplay">Pulse: <span id="pulseCounter">0</span></div>
+            <button id="reverseBtn">Reverse</button>
+        </div>
         <label>Pulse Length: <input type="range" id="speedSlider" min="50" max="1000" step="50" value="500"></label>
         <label>Fold Threshold:
             <span id="foldValue">2</span>
             <input type="range" id="foldSlider" min="0" max="10" step="1" value="2">
         </label>
         <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10"></label>
-        <div id="pulseCounterDisplay">Pulse: <span id="pulseCounter">0</span></div>
-        <button id="reverseBtn">Reverse</button>
         <label>Neighbor Count:
             <span id="neighborValue">2</span>
             <input type="range" id="neighborSlider" min="0" max="8" step="1" value="2">
@@ -29,6 +33,11 @@
         <label><input type="checkbox" id="debugOverlay"> Debug Overlay</label>
         <label><input type="checkbox" id="pulseFlash"> Pulse Flash</label>
         <label><input type="checkbox" id="gridLinesToggle" checked> Grid Lines</label>
+        <div id="infoLinks" class="controlRow">
+            <a href="#" id="aboutLink">About</a>
+            <span>|</span>
+            <a href="#" id="directionsLink">Directions</a>
+        </div>
     </div>
 
     <div id="tools">
@@ -54,7 +63,10 @@
         <button id="patternUploadBtn" onclick="uploadPattern()" style="display:none">Upload Pattern</button>
     </div>
 
-    <div id="aboutInfo" class="infoSection">
+    </div>
+
+    <div id="aboutPopup" class="popupOverlay infoSection">
+        <button class="closePopup">X</button>
         <h2>About Pulse-Core</h2>
         <p>Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simulation. Cells flip on and off based on neighbor counts and optional folding logic. Draw patterns, inject pulses and watch the results in real time.</p>
         <ul>
@@ -68,7 +80,8 @@
         </ul>
     </div>
 
-    <div id="usageInfo" class="infoSection">
+    <div id="directionsPopup" class="popupOverlay infoSection">
+        <button class="closePopup">X</button>
         <h2>How to Use</h2>
         <ol>
             <li>Open <code>index.html</code> in your browser.</li>
@@ -79,7 +92,7 @@
         </ol>
         <p>Once loaded, the tool works entirely offline.</p>
     </div>
-    </div>
+
     <canvas id="grid"></canvas>
 
     <script src="public/app.js"></script>
