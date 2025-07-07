@@ -79,8 +79,11 @@ function getNeighborsSum(r, c) {
     }
     return sum;
 }
-// Update all cells based on the flicker rule f(n) = (n + 1)^2 % 2
-// Future folding mechanics can modify the grid here using foldSlider.value
+// Update the grid state each tick.
+// Previously this used the placeholder "flicker rule" `((n + 1) ** 2) % 2`
+// which toggled every cell between 0 and 1 every frame, causing the entire
+// canvas background to flash green/black. The rule has been removed so the
+// grid only changes when pulses are applied or future mechanics modify it.
 
 function update() {
     if (reverse) {
@@ -95,24 +98,21 @@ function update() {
             grid: JSON.parse(JSON.stringify(grid)),
             colorGrid: JSON.parse(JSON.stringify(colorGrid))
         });
-        const next = [];
-        for (let r = 0; r < rows; r++) {
-            const row = [];
-            for (let c = 0; c < cols; c++) {
-                const n = getNeighborsSum(r, c);
-                row.push(((n + 1) ** 2) % 2);
-            }
-            next.push(row);
-        }
-        grid = next;
+        // Clone the current grid so we can apply pulses without altering
+        // the original during iteration.
+        const next = grid.map(row => row.slice());
+        // In the old implementation every cell was recalculated here,
+        // forcing a full-frame flicker. Now we only modify cells affected
+        // by active pulses or future mechanics.
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
-                grid[p.r][p.c] = p.remaining % 2;
+                next[p.r][p.c] = p.remaining % 2;
                 colorGrid[p.r][p.c] = p.color;
                 p.remaining--;
             }
         });
         pulses = pulses.filter(p => p.remaining > 0);
+        grid = next;
         pulseCounter++;
     }
     drawGrid();
