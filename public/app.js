@@ -1,12 +1,10 @@
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
-// Folding logic will hook into update() using the foldSlider value.
 const canvas = document.getElementById('grid');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const speedSlider = document.getElementById('speedSlider');
-const foldSlider = document.getElementById('foldSlider');
 const zoomSlider = document.getElementById('zoomSlider');
 const toolSelect = document.getElementById('toolSelect');
 const pulseLengthInput = document.getElementById('pulseLength');
@@ -27,6 +25,14 @@ let colorGrid = [];
 let touchedGrid = [];
 let running = false;
 let intervalId = null;
+
+function updateInterval() {
+    if (running) {
+        clearInterval(intervalId);
+        const speed = parseInt(speedSlider.value);
+        intervalId = setInterval(update, speed);
+    }
+}
 let tool = 'brush';
 let pulses = [];
 let patterns = [];
@@ -89,18 +95,6 @@ function drawGrid() {
     }
 }
 
-function getNeighborsSum(r, c) {
-    let sum = grid[r][c];
-    for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const nr = (r + dr + rows) % rows;
-            const nc = (c + dc + cols) % cols;
-            sum += grid[nr][nc];
-        }
-    }
-    return sum;
-}
 // Update the grid state each tick.
 // Previously this used the placeholder "flicker rule" `((n + 1) ** 2) % 2`
 // which toggled every cell between 0 and 1 every frame, causing the entire
@@ -143,6 +137,11 @@ function update() {
                     touchedGrid[p.r][p.c] = true;
                 }
                 p.remaining--;
+                if (p.remaining <= 0) {
+                    touchedGrid[p.r][p.c] = false;
+                    colorGrid[p.r][p.c] = '#000000';
+                    next[p.r][p.c] = 0;
+                }
             }
         });
         for (let r = 0; r < rows; r++) {
@@ -209,8 +208,7 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    const speed = parseInt(speedSlider.value);
-    intervalId = setInterval(update, speed);
+    updateInterval();
 }
 
 function stop() {
@@ -264,6 +262,8 @@ zoomSlider.addEventListener('input', () => {
     createGrid();
     drawGrid();
 });
+
+speedSlider.addEventListener('input', updateInterval);
 
 toolSelect.addEventListener('change', () => {
     tool = toolSelect.value;
