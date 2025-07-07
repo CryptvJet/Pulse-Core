@@ -15,6 +15,9 @@ const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
+const modeToggleBtn = document.getElementById('modeToggleBtn');
+const modeIndicator = document.getElementById('modeIndicator');
+let currentMode = 'color';
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -129,7 +132,13 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            const color = grid[r][c] === 1 ? colorGrid[r][c] : '#000000';
+            let color;
+            if (currentMode === 'color') {
+                color = grid[r][c] === 1 ? colorGrid[r][c] : '#000000';
+            } else {
+                color = grid[r][c] === 1 ? '#ffffff' : '#000000';
+            }
+            
             ctx.fillStyle = color;
             ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
         }
@@ -142,7 +151,7 @@ function drawGrid() {
 // canvas background to flash green/black. The rule has been removed so the
 // grid only changes when pulses are applied or future mechanics modify it.
 
-function update() {
+function updateColor() {
     if (reverse) {
         const prev = history.pop();
         if (prev) {
@@ -201,18 +210,79 @@ function update() {
     pulseCounterSpan.textContent = pulseCounter;
 }
 
+function updateBinary() {
+    if (reverse) {
+        const prev = history.pop();
+        if (prev) {
+            grid = prev.grid;
+            colorGrid = prev.colorGrid;
+            pulses = prev.pulses;
+            pulseCounter--;
+        }
+    } else {
+        history.push({
+            grid: JSON.parse(JSON.stringify(grid)),
+            colorGrid: JSON.parse(JSON.stringify(colorGrid)),
+            pulses: JSON.parse(JSON.stringify(pulses))
+        });
+        if (history.length > HISTORY_LIMIT) {
+            history.shift();
+        }
+        const next = grid.map(row => row.slice());
+        const pulsed = new Set();
+        pulses.forEach(p => {
+            if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
+                next[p.r][p.c] = p.remaining % 2;
+                pulsed.add(p.r + ',' + p.c);
+                p.remaining--;
+                if (p.remaining <= 0) {
+                    next[p.r][p.c] = 0;
+                }
+            }
+        });
+        const evolved = next.map(row => row.slice());
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (pulsed.has(r + ',' + c)) continue;
+                const neighbors = getNeighbors(next, colorGrid, r, c);
+                const liveCount = neighbors.reduce((acc, n) => acc + n.state, 0);
+                if (next[r][c] === 1) {
+                    evolved[r][c] = (liveCount === 2 || liveCount === 3) ? 1 : 0;
+                } else {
+                    evolved[r][c] = liveCount === 3 ? 1 : 0;
+                }
+            }
+        }
+        pulses = pulses.filter(p => p.remaining > 0);
+        grid = evolved;
+        colorGrid = colorGrid.map((row, ri) => row.map((_, ci) => grid[ri][ci] ? '#ffffff' : '#000000'));
+        pulseCounter++;
+    }
+    drawGrid();
+    pulseCounterSpan.textContent = pulseCounter;
+}
+
+function update() {
+    if (currentMode === 'color') {
+        updateColor();
+    } else {
+        updateBinary();
+    }
+}
+
 function applyTool(r, c) {
     if (tool === 'brush') {
         grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
+        colorGrid[r][c] = currentMode === 'color' ? currentColor : '#ffffff';
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
         colorGrid[r][c] = '#000000';
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         grid[r][c] = 1;                 // start active
-        colorGrid[r][c] = currentColor; // display chosen color
-        pulses.push({ r, c, remaining: len * 2 - 1, color: currentColor });
+        const color = currentMode === 'color' ? currentColor : '#ffffff';
+        colorGrid[r][c] = color; // display chosen color
+        pulses.push({ r, c, remaining: len * 2 - 1, color });
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -220,7 +290,7 @@ function applyTool(r, c) {
                 const nr = (r + dr + rows) % rows;
                 const nc = (c + dc + cols) % cols;
                 grid[nr][nc] = 1;
-                colorGrid[nr][nc] = currentColor;
+                colorGrid[nr][nc] = currentMode === 'color' ? currentColor : '#ffffff';
             });
         }
     }
@@ -287,6 +357,8 @@ function init() {
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
+    modeIndicator.textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
+    modeIndicator.className = currentMode === 'color' ? 'mode-color' : 'mode-binary';
 }
 
 window.addEventListener('resize', () => {
@@ -318,6 +390,13 @@ colorPicker.addEventListener('input', () => {
 reverseBtn.addEventListener('click', () => {
     reverse = !reverse;
     reverseBtn.textContent = reverse ? 'Forward' : 'Reverse';
+});
+
+modeToggleBtn.addEventListener('click', () => {
+    currentMode = currentMode === 'color' ? 'binary' : 'color';
+    modeIndicator.textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
+    modeIndicator.className = currentMode === 'color' ? 'mode-color' : 'mode-binary';
+    drawGrid();
 });
 
 canvas.addEventListener('click', toggleCell);

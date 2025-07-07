@@ -41,3 +41,15 @@ body {
     margin-top: 4px;
     display: block;
 }
+
+#modeDisplay {
+    margin-top: 4px;
+}
+
+.mode-binary {
+    color: #0f0;
+}
+
+.mode-color {
+    color: #ff0;
+}
