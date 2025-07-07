@@ -27,12 +27,7 @@ let currentColor = colorPicker.value;
 let cellSize = parseInt(zoomSlider.value);
 let rows;
 let cols;
-let grid = [];
-let colorGrid = [];
-let residueGrid = [];
-let foldGrid = [];
-let flickerCountGrid = [];
-let lastStateGrid = [];
+let sim;
 let running = false;
 let intervalId = null;
 let tool = 'brush';
@@ -40,7 +35,6 @@ let pulses = [];
 let patterns = [];
 let pulseCounter = 0;
 let reverse = false;
-let history = [];
 const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
@@ -66,41 +60,16 @@ function updateCanvasSize() {
 }
 
 function createGrid() {
-    grid = [];
-    colorGrid = [];
-    residueGrid = [];
-    foldGrid = [];
-    flickerCountGrid = [];
-    lastStateGrid = [];
-    for (let r = 0; r < rows; r++) {
-        const row = [];
-        const cRow = [];
-        const resRow = [];
-        const foldRow = [];
-        const flickerRow = [];
-        const lastRow = [];
-        for (let c = 0; c < cols; c++) {
-            row.push(0);
-            cRow.push(currentColor);
-            resRow.push(0);
-            foldRow.push(0);
-            flickerRow.push(0);
-            lastRow.push(0);
-        }
-        grid.push(row);
-        colorGrid.push(cRow);
-        residueGrid.push(resRow);
-        foldGrid.push(foldRow);
-        flickerCountGrid.push(flickerRow);
-        lastStateGrid.push(lastRow);
-    }
+    sim = new SimulationState(rows, cols, MAX_HISTORY);
+    applyColorToGrid(currentColor);
 }
 
 // Set every cell in colorGrid to the provided color
 function applyColorToGrid(color) {
+    if (!sim) return;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            colorGrid[r][c] = color;
+            sim.colorGrid[r][c] = color;
         }
     }
 }
@@ -112,13 +81,13 @@ function drawGrid() {
     ctx.textBaseline = 'top';
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (grid[r][c] === 1) {
+            if (sim.grid[r][c] === 1) {
                 if (running) {
-                    ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+                    ctx.fillStyle = flickerPhase ? sim.colorGrid[r][c] : '#000';
                 } else {
-                    ctx.fillStyle = colorGrid[r][c];
+                    ctx.fillStyle = sim.colorGrid[r][c];
                 }
-            } else if (foldGrid[r][c] === 1) {
+            } else if (sim.foldGrid[r][c] === 1) {
                 ctx.fillStyle = '#111';
             } else {
                 ctx.fillStyle = '#222';
@@ -126,68 +95,16 @@ function drawGrid() {
             ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
 
             if (debugOverlay) {
-                const n = getNeighborsSum(r, c);
+                const n = sim.getNeighborsSum(r, c);
                 ctx.fillStyle = 'white';
-                const disp = neighborThreshold === 0 ? grid[r][c] : n;
+                const disp = neighborThreshold === 0 ? sim.grid[r][c] : n;
                 ctx.fillText(disp, c * cellSize + 2, r * cellSize + 2);
             }
         }
     }
 }
 
-// Return the total of all eight neighbors around (r, c)
-function getNeighborsSum(r, c) {
-    let sum = 0;
-    for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue; // skip the cell itself
-            const nr = (r + dr + rows) % rows;
-            const nc = (c + dc + cols) % cols;
-            sum += grid[nr][nc];
-        }
-    }
-    return sum;
-}
 
-// Update a single cell and return its new value and fold state
-function updateCellState(r, c, n, foldThreshold) {
-    let val = grid[r][c];
-    let folded = false;
-
-    if (foldThreshold > 0 && flickerCountGrid[r][c] >= foldThreshold) {
-        val = 0;
-        folded = true;
-        flickerCountGrid[r][c] = 0;
-    } else {
-        if (neighborThreshold === 0) {
-            val = grid[r][c] ? 0 : 1;
-        } else {
-            val = n === neighborThreshold ? 1 : 0;
-        }
-
-        if (residueGrid[r][c] > 0) {
-            val = 1;
-            residueGrid[r][c]--;
-        }
-
-        if (foldThreshold > 0 && n > foldThreshold) {
-            val = 0;
-            folded = true;
-            flickerCountGrid[r][c] = 0;
-        }
-
-        if (!folded) {
-            if (val !== lastStateGrid[r][c]) {
-                flickerCountGrid[r][c] += 1;
-            } else {
-                flickerCountGrid[r][c] = 0;
-            }
-        }
-    }
-
-    lastStateGrid[r][c] = val;
-    return { val, folded };
-}
 // Update all cells based on the neighbor threshold
 // Future folding mechanics can modify the grid here using foldSlider.value
 
@@ -195,69 +112,10 @@ function update() {
     flickerPhase = !flickerPhase;
     const foldThreshold = parseInt(foldSlider.value);
     if (reverse) {
-        const prev = history.pop();
-        if (prev) {
-            grid = prev.grid;
-            colorGrid = prev.colorGrid;
-            pulseCounter--;
-        }
+        sim.reverse();
+        if (pulseCounter > 0) pulseCounter--;
     } else {
-        history.push({
-            grid: JSON.parse(JSON.stringify(grid)),
-            colorGrid: JSON.parse(JSON.stringify(colorGrid))
-        });
-        if (history.length > MAX_HISTORY) {
-            history.shift();
-        }
-        let next = [];
-        let nextFold = [];
-        for (let r = 0; r < rows; r++) {
-            const row = [];
-            const foldRow = [];
-            for (let c = 0; c < cols; c++) {
-                const n = getNeighborsSum(r, c);
-                const { val, folded } = updateCellState(r, c, n, foldThreshold);
-
-                if (debugOverlay) {
-                    console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
-                }
-
-                row.push(val);
-                foldRow.push(folded ? 1 : 0);
-            }
-            next.push(row);
-            nextFold.push(foldRow);
-        }
-
-        // propagate flicker to neighbors
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (next[r][c] !== grid[r][c]) {
-                    for (let dr = -1; dr <= 1; dr++) {
-                        for (let dc = -1; dc <= 1; dc++) {
-                            if (dr === 0 && dc === 0) continue;
-                            const nr = (r + dr + rows) % rows;
-                            const nc = (c + dc + cols) % cols;
-                            residueGrid[nr][nc] = Math.max(residueGrid[nr][nc], 1);
-                        }
-                    }
-                }
-            }
-        }
-
-        grid = next;
-        foldGrid = nextFold;
-        pulses.forEach(p => {
-            if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
-                grid[p.r][p.c] = p.remaining % 2;
-                colorGrid[p.r][p.c] = p.color;
-                foldGrid[p.r][p.c] = 0;
-                lastStateGrid[p.r][p.c] = grid[p.r][p.c];
-                flickerCountGrid[p.r][p.c] = 0;
-                p.remaining--;
-            }
-        });
-        pulses = pulses.filter(p => p.remaining > 0);
+        pulses = sim.tick(neighborThreshold, foldThreshold, pulses);
         pulseCounter++;
     }
     drawGrid();
@@ -266,36 +124,21 @@ function update() {
 
 function applyTool(r, c) {
     if (tool === 'brush') {
-        grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
-        foldGrid[r][c] = 0;
-        lastStateGrid[r][c] = 1;
-        flickerCountGrid[r][c] = 0;
+        sim.updateCellState(r, c, 1, currentColor);
         flickerPhase = true;
     } else if (tool === 'eraser') {
-        grid[r][c] = 0;
-        foldGrid[r][c] = 0;
-        lastStateGrid[r][c] = 0;
-        flickerCountGrid[r][c] = 0;
+        sim.updateCellState(r, c, 0);
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
-        grid[r][c] = 1; // Ensure the pulse cell is active immediately
-        colorGrid[r][c] = currentColor;
-        foldGrid[r][c] = 0;
-        lastStateGrid[r][c] = 1;
-        flickerCountGrid[r][c] = 0;
+        sim.updateCellState(r, c, 1, currentColor);
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
             pattern.cells.forEach(([dr, dc]) => {
                 const nr = (r + dr + rows) % rows;
                 const nc = (c + dc + cols) % cols;
-                grid[nr][nc] = 1;
-                colorGrid[nr][nc] = currentColor;
-                foldGrid[nr][nc] = 0;
-                lastStateGrid[nr][nc] = 1;
-                flickerCountGrid[nr][nc] = 0;
+                sim.updateCellState(nr, nc, 1, currentColor);
             });
         }
     }
@@ -357,29 +200,17 @@ function clearGrid() {
     stop();
     createGrid();
     pulses = [];
-    history = [];
     pulseCounter = 0;
     pulseCounterSpan.textContent = pulseCounter;
     drawGrid();
 }
 
 function saveCurrentPattern() {
-    const cells = [];
-    let minR = rows, minC = cols;
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (grid[r][c] === 1) {
-                cells.push([r, c]);
-                if (r < minR) minR = r;
-                if (c < minC) minC = c;
-            }
-        }
-    }
-    if (cells.length === 0) return;
+    const pattern = sim.exportPattern();
+    if (!pattern) return;
     const name = prompt('Pattern name?');
     if (!name) return;
-    const rel = cells.map(([r, c]) => [r - minR, c - minC]);
-    patterns.push({ name, cells: rel });
+    patterns.push({ name, cells: pattern.cells });
     const opt = document.createElement('option');
     opt.value = name;
     opt.textContent = name;

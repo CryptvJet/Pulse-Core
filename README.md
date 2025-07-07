@@ -4,6 +4,8 @@ Yay!
 
 This project contains a simple pulse simulation playground. Open `index.html` in a browser to try it out.
 
+The underlying simulation logic now lives in a `SimulationState` class for better performance and reliable reverse playback.
+
 ## Usage
 
 1. Click and drag on the grid to paint active cells, even while the simulation is running.
