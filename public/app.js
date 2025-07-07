@@ -343,14 +343,19 @@ function applyPatternData(data) {
         return;
     }
     clearGrid();
-    const size = data.pattern.length;
-    const half = Math.floor(size / 2);
+
+    const rowCount = data.rows || data.pattern.length;
+    const colCount = data.cols || (Array.isArray(data.pattern[0]) ? data.pattern[0].length : 0);
+    const halfRows = Math.floor(rowCount / 2);
+    const halfCols = Math.floor(colCount / 2);
     const pos = data.position || [Math.floor(rows / 2), Math.floor(cols / 2)];
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-            const val = data.pattern[r][c];
-            const gr = pos[0] - half + r;
-            const gc = pos[1] - half + c;
+
+    for (let r = 0; r < rowCount; r++) {
+        const row = data.pattern[r] || [];
+        for (let c = 0; c < colCount; c++) {
+            const val = row[c] || 0;
+            const gr = pos[0] - halfRows + r;
+            const gc = pos[1] - halfCols + c;
             if (gr >= 0 && gr < rows && gc >= 0 && gc < cols) {
                 grid[gr][gc] = val;
                 if (val === 1) {
@@ -359,6 +364,7 @@ function applyPatternData(data) {
             }
         }
     }
+
     pulseCounter = data.pulse || 0;
     pulseCounterSpan.textContent = pulseCounter;
     drawGrid();
@@ -496,16 +502,17 @@ function saveCurrentPattern() {
     opt.textContent = name;
     patternSelect.appendChild(opt);
 
-    // Create JSON representation for offline use
-    const size = 10;
+    // Create JSON representation for offline use (entire grid)
     const centerR = Math.floor(rows / 2);
     const centerC = Math.floor(cols / 2);
-    const pattern = extractPatternSubgrid(centerR, centerC, size);
+    const pattern = grid.map(row => row.slice());
 
     const data = {
         name,
         pulse: pulseCounter || 0,
         position: [centerR, centerC],
+        rows,
+        cols,
         pattern
     };
 
