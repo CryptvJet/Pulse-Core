@@ -85,19 +85,28 @@ function applyColorToGrid(color) {
 function drawGrid() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
+    ctx.textBaseline = 'top';
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === 1) {
-                ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+                if (running) {
+                    ctx.fillStyle = flickerPhase ? colorGrid[r][c] : '#000';
+                } else {
+                    ctx.fillStyle = colorGrid[r][c];
+                }
             } else if (foldGrid[r][c] === 1) {
                 ctx.fillStyle = '#111';
             } else {
                 ctx.fillStyle = '#222';
             }
             ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
-            if (debugOverlay && grid[r][c] === 0 && getNeighborsSum(r, c) === 0 && neighborThreshold > 0) {
-                ctx.fillStyle = 'rgba(255,0,0,0.3)';
-                ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+
+            if (debugOverlay) {
+                const n = getNeighborsSum(r, c);
+                ctx.fillStyle = 'white';
+                const disp = neighborThreshold === 0 ? grid[r][c] : n;
+                ctx.fillText(disp, c * cellSize + 2, r * cellSize + 2);
             }
         }
     }
@@ -148,17 +157,10 @@ function update() {
                     val = 0;
                     folded = true;
                 } else {
-                    if (n === 0) {
-                        // isolated cells flicker in place
-                        val = grid[r][c] === 1 ? 0 : 1;
-                    } else if (n <= 2) {
-                        // recursive growth with color oscillation
-                        val = 1;
-                    } else { // n >= 3
-                        if (grid[r][c] === 1 || residueGrid[r][c] > 0) {
-                            residueGrid[r][c] = Math.max(residueGrid[r][c], 2);
-                        }
-                        val = 0;
+                    if (neighborThreshold === 0) {
+                        val = grid[r][c] ? 0 : 1;
+                    } else {
+                        val = n === neighborThreshold ? 1 : 0;
                     }
                 }
 
@@ -167,6 +169,9 @@ function update() {
                     residueGrid[r][c]--;
                 }
 
+                if (debugOverlay) {
+                    console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
+                }
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
             }
@@ -212,6 +217,7 @@ function applyTool(r, c) {
         grid[r][c] = 1;
         colorGrid[r][c] = currentColor;
         foldGrid[r][c] = 0;
+        flickerPhase = true;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
         foldGrid[r][c] = 0;
