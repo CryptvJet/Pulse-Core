@@ -77,8 +77,8 @@ function drawGrid() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             let color = '#000';
-            if (touchedGrid[r][c] && grid[r][c] === 1) {
-                color = (pulseCounter % 2 === 0)
+            if (touchedGrid[r][c]) {
+                color = grid[r][c] === 1
                     ? colorGrid[r][c]
                     : invertColor(colorGrid[r][c]);
             }
