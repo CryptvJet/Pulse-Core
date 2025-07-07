@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="public/style.css">
 </head>
 <body>
+    <button id="menuToggle">Menu</button>
+    <div id="slideMenu">
     <div id="controls">
         <button id="startBtn">Start</button>
         <button id="stopBtn" disabled>Stop</button>
@@ -50,6 +52,7 @@
         <button onclick="saveCurrentPattern()">💾 Save Pattern</button>
         <input type="file" id="patternLoader" accept=".json" onchange="handlePatternSelection(this)">
         <button id="patternUploadBtn" onclick="uploadPattern()" style="display:none">Upload Pattern</button>
+    </div>
     </div>
     <canvas id="grid"></canvas>
 
