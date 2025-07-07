@@ -162,15 +162,80 @@ function drawGrid() {
             }
         }
     }
-    if (fieldTensionMode !== 'none') {
-        drawFieldTensionOverlay(fieldTensionMode);
+    if (debugOverlay) {
+        const mode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
+        if (mode === 'none') {
+            clearFieldOverlay();
+        } else {
+            drawFieldTensionOverlay(mode);
+        }
     }
 }
 
 // Stub for rendering different field tension overlays
 function drawFieldTensionOverlay(mode) {
-    // Implement overlay logic for each mode here
-    console.log('Field Tension Mapping mode set to:', mode);
+    switch (mode) {
+        case 'pulse-barrier':
+            drawPulseBarrierTest31();
+            break;
+        case 'waveguide':
+            drawWaveguideLockA();
+            break;
+        case 'channel-field':
+            drawSymmetricChannelField();
+            break;
+        case 'containment':
+            drawContainmentCorridor1();
+            break;
+        case 'reactor-chamber':
+            drawDualReactorChamber();
+            break;
+        default:
+            break; // do nothing for "none"
+    }
+}
+
+function clearFieldOverlay() {
+    // Simply redraw the grid without any overlay
+    // Overlay will be omitted if mode is 'none'
+}
+
+function drawPulseBarrierTest31() {
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cellSize * 2, cellSize * 2, canvas.width - cellSize * 4, canvas.height - cellSize * 4);
+}
+
+function drawWaveguideLockA() {
+    ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, cellSize);
+    ctx.lineTo(canvas.width / 2, canvas.height - cellSize);
+    ctx.stroke();
+}
+
+function drawSymmetricChannelField() {
+    ctx.strokeStyle = 'rgba(0, 0, 255, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cellSize, canvas.height / 2);
+    ctx.lineTo(canvas.width - cellSize, canvas.height / 2);
+    ctx.stroke();
+}
+
+function drawContainmentCorridor1() {
+    ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cellSize, cellSize, canvas.width - cellSize * 2, canvas.height - cellSize * 2);
+}
+
+function drawDualReactorChamber() {
+    ctx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
+    ctx.lineWidth = 2;
+    const mid = canvas.width / 2;
+    ctx.strokeRect(cellSize, cellSize, mid - cellSize * 1.5, canvas.height - cellSize * 2);
+    ctx.strokeRect(mid + cellSize * 0.5, cellSize, mid - cellSize * 1.5, canvas.height - cellSize * 2);
 }
 
 // Return the total of all eight neighbors around (r, c)
@@ -639,7 +704,7 @@ debugCheckbox.addEventListener('change', () => {
 if (fieldTensionDropdown) {
     fieldTensionDropdown.addEventListener('change', () => {
         fieldTensionMode = fieldTensionDropdown.value;
-        drawFieldTensionOverlay(fieldTensionMode);
+        drawGrid();
     });
 }
 
