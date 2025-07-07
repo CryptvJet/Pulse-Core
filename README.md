@@ -22,6 +22,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 
 Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
 The **Pulse Flash** checkbox toggles the brief black-frame effect between pulses. This effect also starts disabled and can be enabled at any time.
+The **Grid Lines** checkbox toggles visible borders between cells.
 
 This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
 
