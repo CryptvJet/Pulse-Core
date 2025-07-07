@@ -79,8 +79,10 @@ function update() {
 function toggleCell(event) {
     if (running) return;
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
     const c = Math.floor(x / cellSize);
     const r = Math.floor(y / cellSize);
     if (r >= 0 && r < rows && c >= 0 && c < cols) {
