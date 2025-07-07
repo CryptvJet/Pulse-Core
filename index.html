@@ -38,10 +38,15 @@
         </label>
         <label>Color: <input type="color" id="colorPicker" value="#00ff00"></label>
         <label id="pulseLengthLabel">Injector Length: <input type="number" id="pulseLength" min="1" value="4"></label>
-        <button id="savePatternBtn">Save Pattern</button>
         <label id="patternLabel">Pattern:
             <select id="patternSelect"></select>
         </label>
+    </div>
+
+    <div id="patternSaver">
+        <input type="text" id="patternName" placeholder="Pattern Name">
+        <button onclick="saveCurrentPattern()">💾 Save Pattern</button>
+        <input type="file" id="patternLoader" accept=".json" onchange="loadPatternFile(this)">
     </div>
     <canvas id="grid"></canvas>
 

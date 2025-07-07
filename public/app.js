@@ -12,7 +12,6 @@ const foldValueSpan = document.getElementById('foldValue');
 const zoomSlider = document.getElementById('zoomSlider');
 const toolSelect = document.getElementById('toolSelect');
 const pulseLengthInput = document.getElementById('pulseLength');
-const savePatternBtn = document.getElementById('savePatternBtn');
 const patternSelect = document.getElementById('patternSelect');
 const pulseLengthLabel = document.getElementById('pulseLengthLabel');
 const patternLabel = document.getElementById('patternLabel');
@@ -38,6 +37,7 @@ let intervalId = null;
 let tool = 'brush';
 let pulses = [];
 let patterns = [];
+let knownPatterns = {};
 let pulseCounter = 0;
 let reverse = false;
 let history = [];
@@ -261,7 +261,78 @@ function update() {
         pulseCounter++;
     }
     drawGrid();
+    detectPatternsInGrid();
     pulseCounterSpan.textContent = pulseCounter;
+}
+
+function extractPatternSubgrid(centerR, centerC, size) {
+    const half = Math.floor(size / 2);
+    const subgrid = [];
+    for (let dr = -half; dr <= half; dr++) {
+        const row = [];
+        for (let dc = -half; dc <= half; dc++) {
+            const r = centerR + dr;
+            const c = centerC + dc;
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                row.push(grid[r][c]);
+            } else {
+                row.push(0);
+            }
+        }
+        subgrid.push(row);
+    }
+    return subgrid;
+}
+
+function loadPatternFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const pattern = JSON.parse(e.target.result);
+            if (pattern.name && pattern.pattern) {
+                knownPatterns[pattern.name] = pattern;
+                console.log(`\u2705 Pattern '${pattern.name}' loaded.`);
+            } else {
+                alert('Invalid pattern file.');
+            }
+        } catch (err) {
+            alert('Error parsing pattern file.');
+        }
+    };
+    reader.readAsText(file);
+}
+
+function comparePattern(sub, reference) {
+    if (sub.length !== reference.length) return false;
+    for (let i = 0; i < sub.length; i++) {
+        for (let j = 0; j < sub[i].length; j++) {
+            if (sub[i][j] !== reference[i][j]) return false;
+        }
+    }
+    return true;
+}
+
+function detectPatternsInGrid() {
+    const size = 10;
+    for (let r = size; r < rows - size; r++) {
+        for (let c = size; c < cols - size; c++) {
+            const sub = extractPatternSubgrid(r, c, size);
+            for (const name in knownPatterns) {
+                if (comparePattern(sub, knownPatterns[name].pattern)) {
+                    labelPattern(r, c, name);
+                }
+            }
+        }
+    }
+}
+
+function labelPattern(r, c, label) {
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#FFD700';
+    ctx.fillText(label, c * cellSize + 5, r * cellSize - 5);
 }
 
 function applyTool(r, c) {
@@ -364,6 +435,14 @@ function clearGrid() {
 }
 
 function saveCurrentPattern() {
+    const nameInput = document.getElementById('patternName');
+    const name = nameInput.value.trim();
+    if (!name) {
+        alert('Please enter a pattern name.');
+        return;
+    }
+
+    // Collect cells for stamping functionality
     const cells = [];
     let minR = rows, minC = cols;
     for (let r = 0; r < rows; r++) {
@@ -375,15 +454,40 @@ function saveCurrentPattern() {
             }
         }
     }
-    if (cells.length === 0) return;
-    const name = prompt('Pattern name?');
-    if (!name) return;
+    if (cells.length === 0) {
+        alert('No active cells to save.');
+        return;
+    }
     const rel = cells.map(([r, c]) => [r - minR, c - minC]);
     patterns.push({ name, cells: rel });
     const opt = document.createElement('option');
     opt.value = name;
     opt.textContent = name;
     patternSelect.appendChild(opt);
+
+    // Create JSON representation for offline use
+    const size = 10;
+    const centerR = Math.floor(rows / 2);
+    const centerC = Math.floor(cols / 2);
+    const pattern = extractPatternSubgrid(centerR, centerC, size);
+
+    const data = {
+        name,
+        pulse: pulseCounter || 0,
+        position: [centerR, centerC],
+        pattern
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    knownPatterns[name] = data;
+    nameInput.value = '';
 }
 
 function init() {
@@ -417,8 +521,6 @@ toolSelect.addEventListener('change', () => {
     pulseLengthLabel.style.display = tool === 'pulse' ? 'block' : 'none';
     patternLabel.style.display = tool === 'stamper' ? 'block' : 'none';
 });
-
-savePatternBtn.addEventListener('click', saveCurrentPattern);
 
 colorPicker.addEventListener('input', () => {
     currentColor = colorPicker.value;
