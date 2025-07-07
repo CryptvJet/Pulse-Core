@@ -21,6 +21,10 @@ patterns. Cells now adopt dominant neighbor colors or blend hues when colors
 conflict, enabling emergent multi-color behavior. The **Pulse Injector** tool
 creates explicit pulses while brushed cells remain active.
 
+In **Binary** mode the grid no longer follows Conway's Life. Instead, cells you
+modify oscillate between 0 and 1 every pulse. Injected pulses override this
+toggling for their duration.
+
 This scaffolding separates UI from simulation logic to allow future growth. Upcoming work will add pulse direction, folding geometry and substrate density.
 
 The project is released under the MIT License (see `LICENSE`).

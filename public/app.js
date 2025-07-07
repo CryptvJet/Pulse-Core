@@ -25,6 +25,7 @@ let rows;
 let cols;
 let grid = [];
 let colorGrid = [];
+let touchedGrid = [];
 let running = false;
 let intervalId = null;
 
@@ -112,19 +113,22 @@ function updateDimensions() {
     canvas.height = rows * cellSize;
 }
 
-function createGrid() {
-    grid = [];
-    colorGrid = [];
-    for (let r = 0; r < rows; r++) {
+function create2DArray(r, c, initial) {
+    const arr = [];
+    for (let i = 0; i < r; i++) {
         const row = [];
-        const cRow = [];
-        for (let c = 0; c < cols; c++) {
-            row.push(0);
-            cRow.push('#000000');
+        for (let j = 0; j < c; j++) {
+            row.push(initial);
         }
-        grid.push(row);
-        colorGrid.push(cRow);
+        arr.push(row);
     }
+    return arr;
+}
+
+function createGrid() {
+    grid = create2DArray(rows, cols, 0);
+    colorGrid = create2DArray(rows, cols, '#000000');
+    touchedGrid = create2DArray(rows, cols, false);
 }
 
 function drawGrid() {
@@ -211,53 +215,25 @@ function updateColor() {
 }
 
 function updateBinary() {
-    if (reverse) {
-        const prev = history.pop();
-        if (prev) {
-            grid = prev.grid;
-            colorGrid = prev.colorGrid;
-            pulses = prev.pulses;
-            pulseCounter--;
+    const next = create2DArray(rows, cols, 0);
+    const pulsed = new Set();
+    pulses.forEach(p => {
+        if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
+            next[p.r][p.c] = p.remaining % 2;
+            pulsed.add(p.r + ',' + p.c);
+            p.remaining--;
         }
-    } else {
-        history.push({
-            grid: JSON.parse(JSON.stringify(grid)),
-            colorGrid: JSON.parse(JSON.stringify(colorGrid)),
-            pulses: JSON.parse(JSON.stringify(pulses))
-        });
-        if (history.length > HISTORY_LIMIT) {
-            history.shift();
-        }
-        const next = grid.map(row => row.slice());
-        const pulsed = new Set();
-        pulses.forEach(p => {
-            if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
-                next[p.r][p.c] = p.remaining % 2;
-                pulsed.add(p.r + ',' + p.c);
-                p.remaining--;
-                if (p.remaining <= 0) {
-                    next[p.r][p.c] = 0;
-                }
-            }
-        });
-        const evolved = next.map(row => row.slice());
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (pulsed.has(r + ',' + c)) continue;
-                const neighbors = getNeighbors(next, colorGrid, r, c);
-                const liveCount = neighbors.reduce((acc, n) => acc + n.state, 0);
-                if (next[r][c] === 1) {
-                    evolved[r][c] = (liveCount === 2 || liveCount === 3) ? 1 : 0;
-                } else {
-                    evolved[r][c] = liveCount === 3 ? 1 : 0;
-                }
+    });
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (!pulsed.has(r + ',' + c)) {
+                next[r][c] = touchedGrid[r][c] ? 1 - grid[r][c] : grid[r][c];
             }
         }
-        pulses = pulses.filter(p => p.remaining > 0);
-        grid = evolved;
-        colorGrid = colorGrid.map((row, ri) => row.map((_, ci) => grid[ri][ci] ? '#ffffff' : '#000000'));
-        pulseCounter++;
     }
+    pulses = pulses.filter(p => p.remaining > 0);
+    grid = next;
+    pulseCounter++;
     drawGrid();
     pulseCounterSpan.textContent = pulseCounter;
 }
@@ -274,15 +250,18 @@ function applyTool(r, c) {
     if (tool === 'brush') {
         grid[r][c] = 1;
         colorGrid[r][c] = currentMode === 'color' ? currentColor : '#ffffff';
+        touchedGrid[r][c] = true;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
         colorGrid[r][c] = '#000000';
+        touchedGrid[r][c] = true;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
         grid[r][c] = 1;                 // start active
         const color = currentMode === 'color' ? currentColor : '#ffffff';
         colorGrid[r][c] = color; // display chosen color
         pulses.push({ r, c, remaining: len * 2 - 1, color });
+        touchedGrid[r][c] = true;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -291,6 +270,7 @@ function applyTool(r, c) {
                 const nc = (c + dc + cols) % cols;
                 grid[nr][nc] = 1;
                 colorGrid[nr][nc] = currentMode === 'color' ? currentColor : '#ffffff';
+                touchedGrid[nr][nc] = true;
             });
         }
     }
