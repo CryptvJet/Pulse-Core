@@ -19,7 +19,7 @@ body {
 #controls button,
 #controls select,
 #controls input,
-#controls div {
+#controls div:not(.controlRow) {
     margin-top: 4px;
     display: block;
 }
@@ -38,6 +38,10 @@ body {
     display: flex;
     gap: 6px;
     margin-top: 4px;
+}
+#infoLinks a {
+    color: #fff;
+    text-decoration: none;
 }
 
 #grid {
