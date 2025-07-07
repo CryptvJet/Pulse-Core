@@ -130,12 +130,14 @@ function update() {
         // Clone the current grid so we can apply pulses without altering
         // the original during iteration.
         const next = grid.map(row => row.slice());
+        const pulsed = new Set();
         // In the old implementation every cell was recalculated here,
         // forcing a full-frame flicker. Now we only modify cells affected
         // by active pulses or future mechanics.
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
                 next[p.r][p.c] = p.remaining % 2;
+                pulsed.add(p.r + ',' + p.c);
                 if (!touchedGrid[p.r][p.c]) {
                     colorGrid[p.r][p.c] = p.color;
                     touchedGrid[p.r][p.c] = true;
@@ -143,6 +145,13 @@ function update() {
                 p.remaining--;
             }
         });
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (touchedGrid[r][c] && !pulsed.has(r + ',' + c)) {
+                    next[r][c] = 1 - next[r][c];
+                }
+            }
+        }
         pulses = pulses.filter(p => p.remaining > 0);
         grid = next;
         pulseCounter++;
@@ -183,7 +192,6 @@ function applyTool(r, c) {
 // UI handlers
 
 function toggleCell(event) {
-    if (running) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
