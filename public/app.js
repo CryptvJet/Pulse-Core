@@ -344,6 +344,20 @@ function applyPatternData(data) {
     }
     clearGrid();
 
+    if (data.fold !== undefined) {
+        foldSlider.value = data.fold;
+        foldValueSpan.textContent = data.fold;
+    }
+    if (data.neighbors !== undefined) {
+        neighborSlider.value = data.neighbors;
+        neighborThreshold = parseInt(data.neighbors);
+        neighborValueSpan.textContent = data.neighbors;
+    }
+    if (data.currentColor) {
+        colorPicker.value = data.currentColor;
+        currentColor = data.currentColor;
+    }
+
     const rowCount = data.rows || data.pattern.length;
     const colCount = data.cols || (Array.isArray(data.pattern[0]) ? data.pattern[0].length : 0);
     const halfRows = Math.floor(rowCount / 2);
@@ -358,7 +372,9 @@ function applyPatternData(data) {
             const gc = pos[1] - halfCols + c;
             if (gr >= 0 && gr < rows && gc >= 0 && gc < cols) {
                 grid[gr][gc] = val;
-                if (val === 1) {
+                if (data.colors && data.colors[r] && data.colors[r][c]) {
+                    colorGrid[gr][gc] = data.colors[r][c];
+                } else if (val === 1) {
                     colorGrid[gr][gc] = currentColor;
                 }
             }
@@ -506,6 +522,7 @@ function saveCurrentPattern() {
     const centerR = Math.floor(rows / 2);
     const centerC = Math.floor(cols / 2);
     const pattern = grid.map(row => row.slice());
+    const colors = colorGrid.map(row => row.slice());
 
     const data = {
         name,
@@ -513,7 +530,11 @@ function saveCurrentPattern() {
         position: [centerR, centerC],
         rows,
         cols,
-        pattern
+        pattern,
+        colors,
+        fold: foldSlider.value,
+        neighbors: neighborSlider.value,
+        currentColor
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
