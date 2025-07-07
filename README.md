@@ -17,6 +17,7 @@ This project contains a simple pulse simulation playground. Open `index.html` in
 5. Adjust the **Neighbor Count** slider (0–8) to control when a cell becomes active:
    - **0** – every cell simply flips state each tick.
    - **1–8** – a cell turns on only when it has exactly that many live neighbors.
+   The chosen value appears next to the slider.
 
 Use the **Reverse** button to step backward through previous pulses. A color picker lets you choose the color for brush strokes, injected pulses and stamped patterns.
 

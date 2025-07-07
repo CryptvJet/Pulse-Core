@@ -19,6 +19,7 @@ const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
+const neighborValueSpan = document.getElementById('neighborValue');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -234,6 +235,7 @@ function init() {
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
     neighborThreshold = parseInt(neighborSlider.value);
+    neighborValueSpan.textContent = neighborSlider.value;
 }
 
 window.addEventListener('resize', () => {
@@ -264,6 +266,7 @@ colorPicker.addEventListener('input', () => {
 
 neighborSlider.addEventListener('input', () => {
     neighborThreshold = parseInt(neighborSlider.value);
+    neighborValueSpan.textContent = neighborSlider.value;
 });
 
 reverseBtn.addEventListener('click', () => {
