@@ -53,6 +53,32 @@
         <input type="file" id="patternLoader" accept=".json" onchange="handlePatternSelection(this)">
         <button id="patternUploadBtn" onclick="uploadPattern()" style="display:none">Upload Pattern</button>
     </div>
+
+    <div id="aboutInfo" class="infoSection">
+        <h2>About Pulse-Core</h2>
+        <p>Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simulation. Cells flip on and off based on neighbor counts and optional folding logic. Draw patterns, inject pulses and watch the results in real time.</p>
+        <ul>
+            <li>Dynamic grid adapts with the zoom slider (capped at 500×500 cells).</li>
+            <li>Start/Stop controls with reverse stepping.</li>
+            <li>Adjust pulse length, folding threshold and neighbor count while running.</li>
+            <li>Brush, eraser, pulse injector and pattern stamper tools.</li>
+            <li>Color picker and optional flash effect.</li>
+            <li>Save patterns as JSON and reload them later.</li>
+            <li>Toggle debug numbers and grid lines.</li>
+        </ul>
+    </div>
+
+    <div id="usageInfo" class="infoSection">
+        <h2>How to Use</h2>
+        <ol>
+            <li>Open <code>index.html</code> in your browser.</li>
+            <li>Select a tool from the <strong>Tool</strong> dropdown and draw on the grid.</li>
+            <li>Press <strong>Start</strong> to animate the pattern and tweak the sliders as it runs.</li>
+            <li>Use <strong>Save Pattern</strong> to download your design or <strong>Upload Pattern</strong> to load a saved file.</li>
+            <li>The <strong>Reverse</strong> button steps backward through previous pulses.</li>
+        </ol>
+        <p>Once loaded, the tool works entirely offline.</p>
+    </div>
     </div>
     <canvas id="grid"></canvas>
 

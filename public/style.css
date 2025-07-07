@@ -15,6 +15,15 @@ body {
     border-radius: 4px;
 }
 
+#controls label,
+#controls button,
+#controls select,
+#controls input,
+#controls div {
+    margin-top: 4px;
+    display: block;
+}
+
 #grid {
     background: #000;
     display: block;
@@ -45,6 +54,14 @@ body {
 #patternSaver button {
     margin-top: 4px;
     display: block;
+}
+
+.infoSection {
+    background: rgba(34, 34, 34, 0.8);
+    padding: 10px;
+    z-index: 10;
+    border-radius: 4px;
+    color: #eee;
 }
 
 #menuToggle {
