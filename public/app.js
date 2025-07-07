@@ -586,8 +586,7 @@ window.addEventListener('resize', () => {
 });
 
 zoomSlider.addEventListener('input', () => {
-    updateDimensions();
-    createGrid();
+    updateCanvasSize();
     drawGrid();
 });
 
