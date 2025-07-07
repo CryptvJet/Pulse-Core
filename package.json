@@ -1,0 +1,12 @@
+{
+  "name": "pulse-core",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint public/*.js",
+    "test": "echo \"No tests yet\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

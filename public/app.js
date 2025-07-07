@@ -21,6 +21,7 @@ const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
 const debugCheckbox = document.getElementById('debugOverlay');
+const patternDetectCheckbox = document.getElementById('patternDetect');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -45,11 +46,29 @@ const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let flickerPhase = false;
+const MAX_DIMENSION = 250;
+let zoomWarningShown = false;
+const PATTERN_CHECK_INTERVAL = 5;
+const PATTERN_CELL_THRESHOLD = 100000;
+let patternDetectionEnabled = true;
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
     cols = Math.floor(window.innerWidth / cellSize);
     rows = Math.floor(window.innerHeight / cellSize);
+
+    if (cols > MAX_DIMENSION || rows > MAX_DIMENSION) {
+        const newSize = Math.ceil(Math.max(window.innerWidth, window.innerHeight) / MAX_DIMENSION);
+        cellSize = newSize;
+        zoomSlider.value = newSize;
+        cols = Math.floor(window.innerWidth / cellSize);
+        rows = Math.floor(window.innerHeight / cellSize);
+        if (!zoomWarningShown) {
+            alert('Zoom level adjusted for performance (max 250x250 grid).');
+            zoomWarningShown = true;
+        }
+    }
+
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
     canvas.style.width = `${canvas.width}px`;
@@ -59,6 +78,11 @@ function updateDimensions() {
 // Resize the canvas without recreating the grid
 function updateCanvasSize() {
     cellSize = parseInt(zoomSlider.value);
+    if (cols > MAX_DIMENSION || rows > MAX_DIMENSION) {
+        const newSize = Math.ceil(Math.max(window.innerWidth, window.innerHeight) / MAX_DIMENSION);
+        cellSize = newSize;
+        zoomSlider.value = newSize;
+    }
     canvas.width = cols * cellSize;
     canvas.height = rows * cellSize;
     canvas.style.width = `${canvas.width}px`;
@@ -265,7 +289,13 @@ function update() {
         pulseCounter++;
     }
     drawGrid();
-    detectPatternsInGrid();
+    if (
+        patternDetectionEnabled &&
+        rows * cols <= PATTERN_CELL_THRESHOLD &&
+        pulseCounter % PATTERN_CHECK_INTERVAL === 0
+    ) {
+        detectPatternsInGrid();
+    }
     pulseCounterSpan.textContent = pulseCounter;
 }
 
@@ -508,6 +538,7 @@ function init() {
     neighborValueSpan.textContent = neighborSlider.value;
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
+    patternDetectionEnabled = patternDetectCheckbox ? patternDetectCheckbox.checked : true;
 }
 
 window.addEventListener('resize', () => {
@@ -555,6 +586,12 @@ debugCheckbox.addEventListener('change', () => {
     debugOverlay = debugCheckbox.checked;
     drawGrid();
 });
+
+if (patternDetectCheckbox) {
+    patternDetectCheckbox.addEventListener('change', () => {
+        patternDetectionEnabled = patternDetectCheckbox.checked;
+    });
+}
 
 reverseBtn.addEventListener('click', () => {
     reverse = !reverse;
