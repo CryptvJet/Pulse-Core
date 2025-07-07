@@ -243,8 +243,9 @@ function applyTool(r, c) {
 }
 // UI handlers
 
-function toggleCell(event) {
-    if (running) return;
+let isDrawing = false;
+
+function getCellFromEvent(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -252,9 +253,28 @@ function toggleCell(event) {
     const y = (event.clientY - rect.top) * scaleY;
     const c = Math.floor(x / cellSize);
     const r = Math.floor(y / cellSize);
+    return { r, c };
+}
+
+function toggleCell(event) {
+    const { r, c } = getCellFromEvent(event);
     if (r >= 0 && r < rows && c >= 0 && c < cols) {
         applyTool(r, c);
     }
+}
+
+function startDrawing(event) {
+    isDrawing = true;
+    toggleCell(event);
+}
+
+function drawIfNeeded(event) {
+    if (!isDrawing) return;
+    toggleCell(event);
+}
+
+function stopDrawing() {
+    isDrawing = false;
 }
 
 function start() {
@@ -360,7 +380,10 @@ reverseBtn.addEventListener('click', () => {
     reverseBtn.textContent = reverse ? 'Forward' : 'Reverse';
 });
 
-canvas.addEventListener('click', toggleCell);
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', drawIfNeeded);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mouseleave', stopDrawing);
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
