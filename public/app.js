@@ -7,19 +7,21 @@ const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const speedSlider = document.getElementById('speedSlider');
 const foldSlider = document.getElementById('foldSlider');
+const zoomSlider = document.getElementById('zoomSlider');
 
-let rows = 50;
-let cols = 50;
-let cellSize;
+let cellSize = parseInt(zoomSlider.value);
+let rows;
+let cols;
 let grid = [];
 let running = false;
 let intervalId = null;
 
-function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    cellSize = Math.min(canvas.width / cols, canvas.height / rows);
-    drawGrid();
+function updateDimensions() {
+    cellSize = parseInt(zoomSlider.value);
+    cols = Math.floor(window.innerWidth / cellSize);
+    rows = Math.floor(window.innerHeight / cellSize);
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
 }
 
 function createGrid() {
@@ -74,7 +76,6 @@ function update() {
 }
 // UI handlers
 
-
 function toggleCell(event) {
     if (running) return;
     const rect = canvas.getBoundingClientRect();
@@ -82,8 +83,10 @@ function toggleCell(event) {
     const y = event.clientY - rect.top;
     const c = Math.floor(x / cellSize);
     const r = Math.floor(y / cellSize);
-    grid[r][c] = grid[r][c] === 1 ? 0 : 1;
-    drawGrid();
+    if (r >= 0 && r < rows && c >= 0 && c < cols) {
+        grid[r][c] = grid[r][c] === 1 ? 0 : 1;
+        drawGrid();
+    }
 }
 
 function start() {
@@ -102,11 +105,27 @@ function stop() {
     clearInterval(intervalId);
 }
 
-window.addEventListener('resize', resizeCanvas);
+function init() {
+    updateDimensions();
+    createGrid();
+    drawGrid();
+}
+
+window.addEventListener('resize', () => {
+    updateDimensions();
+    createGrid();
+    drawGrid();
+});
+
+zoomSlider.addEventListener('input', () => {
+    updateDimensions();
+    createGrid();
+    drawGrid();
+});
+
 canvas.addEventListener('click', toggleCell);
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 
-createGrid();
-resizeCanvas();
+init();
 // Additional hooks for pulse direction and substrate density will be added later.
