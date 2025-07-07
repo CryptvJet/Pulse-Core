@@ -14,16 +14,24 @@ const savePatternBtn = document.getElementById('savePatternBtn');
 const patternSelect = document.getElementById('patternSelect');
 const pulseLengthLabel = document.getElementById('pulseLengthLabel');
 const patternLabel = document.getElementById('patternLabel');
+const colorPicker = document.getElementById('colorPicker');
+const pulseCounterSpan = document.getElementById('pulseCounter');
+const reverseBtn = document.getElementById('reverseBtn');
+let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
 let rows;
 let cols;
 let grid = [];
+let colorGrid = [];
 let running = false;
 let intervalId = null;
 let tool = 'brush';
 let pulses = [];
 let patterns = [];
+let pulseCounter = 0;
+let reverse = false;
+let history = [];
 
 function updateDimensions() {
     cellSize = parseInt(zoomSlider.value);
@@ -35,12 +43,16 @@ function updateDimensions() {
 
 function createGrid() {
     grid = [];
+    colorGrid = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
+        const cRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
+            cRow.push('#00ff00');
         }
         grid.push(row);
+        colorGrid.push(cRow);
     }
 }
 
@@ -49,7 +61,7 @@ function drawGrid() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            ctx.fillStyle = grid[r][c] === 1 ? 'green' : '#222';
+            ctx.fillStyle = grid[r][c] === 1 ? colorGrid[r][c] : '#222';
             ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
         }
     }
@@ -71,35 +83,52 @@ function getNeighborsSum(r, c) {
 // Future folding mechanics can modify the grid here using foldSlider.value
 
 function update() {
-    const next = [];
-    for (let r = 0; r < rows; r++) {
-        const row = [];
-        for (let c = 0; c < cols; c++) {
-            const n = getNeighborsSum(r, c);
-            row.push(((n + 1) ** 2) % 2);
+    if (reverse) {
+        const prev = history.pop();
+        if (prev) {
+            grid = prev.grid;
+            colorGrid = prev.colorGrid;
+            pulseCounter--;
         }
-        next.push(row);
+    } else {
+        history.push({
+            grid: JSON.parse(JSON.stringify(grid)),
+            colorGrid: JSON.parse(JSON.stringify(colorGrid))
+        });
+        const next = [];
+        for (let r = 0; r < rows; r++) {
+            const row = [];
+            for (let c = 0; c < cols; c++) {
+                const n = getNeighborsSum(r, c);
+                row.push(((n + 1) ** 2) % 2);
+            }
+            next.push(row);
+        }
+        grid = next;
+        pulses.forEach(p => {
+            if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
+                grid[p.r][p.c] = p.remaining % 2;
+                colorGrid[p.r][p.c] = p.color;
+                p.remaining--;
+            }
+        });
+        pulses = pulses.filter(p => p.remaining > 0);
+        pulseCounter++;
     }
-    grid = next;
-    // apply active pulses
-    pulses.forEach(p => {
-        if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
-            grid[p.r][p.c] = p.remaining % 2;
-            p.remaining--;
-        }
-    });
-    pulses = pulses.filter(p => p.remaining > 0);
     drawGrid();
+    pulseCounterSpan.textContent = pulseCounter;
 }
 
 function applyTool(r, c) {
     if (tool === 'brush') {
         grid[r][c] = 1;
+        colorGrid[r][c] = currentColor;
     } else if (tool === 'eraser') {
         grid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = parseInt(pulseLengthInput.value) || 1;
-        pulses.push({ r, c, remaining: len * 2 });
+        pulses.push({ r, c, remaining: len * 2, color: currentColor });
+        colorGrid[r][c] = currentColor;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -107,6 +136,7 @@ function applyTool(r, c) {
                 const nr = (r + dr + rows) % rows;
                 const nc = (c + dc + cols) % cols;
                 grid[nr][nc] = 1;
+                colorGrid[nr][nc] = currentColor;
             });
         }
     }
@@ -173,6 +203,8 @@ function init() {
     drawGrid();
     pulseLengthLabel.style.display = 'none';
     patternLabel.style.display = 'none';
+    pulseCounterSpan.textContent = pulseCounter;
+    reverseBtn.textContent = 'Reverse';
 }
 
 window.addEventListener('resize', () => {
@@ -194,6 +226,15 @@ toolSelect.addEventListener('change', () => {
 });
 
 savePatternBtn.addEventListener('click', saveCurrentPattern);
+
+colorPicker.addEventListener('input', () => {
+    currentColor = colorPicker.value;
+});
+
+reverseBtn.addEventListener('click', () => {
+    reverse = !reverse;
+    reverseBtn.textContent = reverse ? 'Forward' : 'Reverse';
+});
 
 canvas.addEventListener('click', toggleCell);
 startBtn.addEventListener('click', start);
