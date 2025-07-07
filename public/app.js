@@ -46,7 +46,8 @@ let history = [];
 const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
-const MAX_DIMENSION = 250;
+// Maximum row/column count before zoom is restricted. Increase at your own risk
+const MAX_DIMENSION = 500;
 let zoomWarningShown = false;
 const PATTERN_CHECK_INTERVAL = 5;
 const PATTERN_CELL_THRESHOLD = 100000;
@@ -65,7 +66,7 @@ function updateDimensions() {
         cols = Math.floor(window.innerWidth / cellSize);
         rows = Math.floor(window.innerHeight / cellSize);
         if (!zoomWarningShown) {
-            alert('Zoom level adjusted for performance (max 250x250 grid).');
+            alert('Zoom level adjusted for performance (max 500x500 grid).');
             zoomWarningShown = true;
         }
     }
