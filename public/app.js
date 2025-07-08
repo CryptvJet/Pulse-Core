@@ -350,8 +350,8 @@ function update() {
         }
     } else {
         history.push({
-            grid: JSON.parse(JSON.stringify(grid)),
-            colorGrid: JSON.parse(JSON.stringify(colorGrid))
+            grid: copyGrid(grid),
+            colorGrid: copyGrid(colorGrid)
         });
         if (history.length > MAX_HISTORY) {
             history.shift();
@@ -698,6 +698,81 @@ function triggerBigBang() {
     console.log('Big Bang at', new Date().toISOString());
 }
 
+function seedSymmetricalBurst(cr, cc) {
+    for (let r = cr - 5; r <= cr + 5; r++) {
+        for (let c = cc - 5; c <= cc + 5; c++) {
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                grid[r][c] = 1;
+                colorGrid[r][c] = currentColor;
+            }
+        }
+    }
+}
+
+function seedRandomScatter(_cr, _cc, density = 0.05) {
+    const count = Math.floor(rows * cols * density);
+    for (let i = 0; i < count; i++) {
+        const r = Math.floor(Math.random() * rows);
+        const c = Math.floor(Math.random() * cols);
+        grid[r][c] = 1;
+        colorGrid[r][c] = currentColor;
+    }
+}
+
+function seedPerlinCluster(cr, cc, scale = 0.5) {
+    for (let r = cr - 10; r <= cr + 10; r++) {
+        for (let c = cc - 10; c <= cc + 10; c++) {
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                const dx = c - cc;
+                const dy = r - cr;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (Math.sin(dist * scale) > 0.5) {
+                    grid[r][c] = 1;
+                    colorGrid[r][c] = currentColor;
+                }
+            }
+        }
+    }
+}
+
+function seedRecursiveFractals(cr, cc, depth = 3) {
+    if (depth <= 0) return;
+    for (let dr = -depth; dr <= depth; dr++) {
+        for (let dc = -depth; dc <= depth; dc++) {
+            const r = cr + dr;
+            const c = cc + dc;
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                grid[r][c] = 1;
+                colorGrid[r][c] = currentColor;
+            }
+        }
+    }
+    seedRecursiveFractals(cr - depth, cc, depth - 1);
+    seedRecursiveFractals(cr + depth, cc, depth - 1);
+    seedRecursiveFractals(cr, cc - depth, depth - 1);
+    seedRecursiveFractals(cr, cc + depth, depth - 1);
+}
+
+function loadPatternFromMemory(cr, cc) {
+    const pattern = [
+        [0, 1, 0],
+        [1, 1, 1],
+        [0, 1, 0]
+    ];
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+            if (pattern[r][c]) {
+                const nr = cr + r - 1;
+                const nc = cc + c - 1;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                    grid[nr][nc] = 1;
+                    colorGrid[nr][nc] = currentColor;
+                }
+            }
+        }
+    }
+}
+
 function triggerInfoNova() {
     const searchRadius = Math.max(2, Math.min(5, Math.floor(Math.min(rows, cols) / 4)));
     let originR = Math.floor(rows / 2);
@@ -745,89 +820,26 @@ function triggerInfoNova() {
 
     clearGrid(false);
 
-    let placed = 0;
-
-    function seedFractal(cr, cc, depth) {
-        if (depth <= 0) return;
-        for (let dr = -depth; dr <= depth; dr++) {
-            for (let dc = -depth; dc <= depth; dc++) {
-                const r = cr + dr;
-                const c = cc + dc;
-                if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    grid[r][c] = 1;
-                    colorGrid[r][c] = currentColor;
-                }
-            }
-        }
-        seedFractal(cr - depth, cc, depth - 1);
-        seedFractal(cr + depth, cc, depth - 1);
-        seedFractal(cr, cc - depth, depth - 1);
-        seedFractal(cr, cc + depth, depth - 1);
+    console.log('Seeding: ' + genesisMode);
+    if (novaOverlay) {
+        novaOverlay.textContent = 'Seeding: ' + genesisMode;
     }
-
-    console.log('Using genesis mode:', genesisMode);
 
     switch (genesisMode) {
     case 'stable':
-        console.log('Using STABLE genesis mode');
-        for (let r = originR - 5; r <= originR + 5; r++) {
-            for (let c = originC - 5; c <= originC + 5; c++) {
-                if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    grid[r][c] = 1;
-                    colorGrid[r][c] = currentColor;
-                }
-            }
-        }
+        seedSymmetricalBurst(originR, originC);
         break;
     case 'chaotic':
-        console.log('Using CHAOTIC genesis mode');
-        placed = Math.floor(rows * cols * 0.05);
-        for (let i = 0; i < placed; i++) {
-            const r = Math.floor(Math.random() * rows);
-            const c = Math.floor(Math.random() * cols);
-            grid[r][c] = 1;
-            colorGrid[r][c] = currentColor;
-        }
+        seedRandomScatter(originR, originC, 0.05);
         break;
     case 'fractal':
-        console.log('Using FRACTAL genesis mode');
-        seedFractal(originR, originC, 3);
+        seedRecursiveFractals(originR, originC, 3);
         break;
     case 'organic':
-        console.log('Using ORGANIC genesis mode');
-        for (let r = originR - 10; r <= originR + 10; r++) {
-            for (let c = originC - 10; c <= originC + 10; c++) {
-                if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    const dx = c - originC;
-                    const dy = r - originR;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (Math.sin(dist * 0.5) > 0.5) {
-                        grid[r][c] = 1;
-                        colorGrid[r][c] = currentColor;
-                    }
-                }
-            }
-        }
+        seedPerlinCluster(originR, originC, 0.5);
         break;
     case 'seeded':
-        console.log('Using SEEDED genesis mode');
-        const pattern = [
-            [0, 1, 0],
-            [1, 1, 1],
-            [0, 1, 0]
-        ];
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 3; c++) {
-                if (pattern[r][c]) {
-                    const nr = originR + r - 1;
-                    const nc = originC + c - 1;
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                        grid[nr][nc] = 1;
-                        colorGrid[nr][nc] = currentColor;
-                    }
-                }
-            }
-        }
+        loadPatternFromMemory(originR, originC);
         break;
     default:
         console.log('Unknown genesis mode:', genesisMode);
@@ -841,7 +853,10 @@ function triggerInfoNova() {
 
     if (novaOverlay) {
         novaOverlay.classList.add('show');
-        setTimeout(() => novaOverlay.classList.remove('show'), 1200);
+        setTimeout(() => {
+            novaOverlay.classList.remove('show');
+            novaOverlay.textContent = 'DATA NOVA';
+        }, 1200);
     }
 
     console.log('Data Nova at', new Date().toISOString());
@@ -1077,7 +1092,6 @@ if (menuToggle && slideMenu) {
     });
 }
 
-init();
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { triggerInfoNova, latestNovaCenter, genesisMode };
+export { init, triggerInfoNova, latestNovaCenter, genesisMode };
