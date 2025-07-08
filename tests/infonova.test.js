@@ -16,13 +16,15 @@ beforeEach(() => {
     global.start = () => {};
     global.accumulatedEnergy = 123;
     global.pulseCounter = 5;
+    global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    prevGrid[1][1] = 1;
+    prevGrid[1][2] = 1;
+    prevGrid[2][1] = 1;
 });
 
-test('triggerInfoNova resets counter and activates center cell', () => {
+test('triggerInfoNova resets counter and uses densest region as origin', () => {
     triggerInfoNova();
     expect(pulseCounter).toBe(0);
-    const midR = Math.floor(rows / 2);
-    const midC = Math.floor(cols / 2);
-    expect(grid[midR][midC]).toBe(1);
+    expect(grid[1][1]).toBe(1);
 });
 

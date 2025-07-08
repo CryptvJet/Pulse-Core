@@ -686,20 +686,57 @@ function triggerBigBang() {
 }
 
 function triggerInfoNova() {
-    const centerX = Math.floor(rows / 2);
-    const centerY = Math.floor(cols / 2);
+    // Analyze the previous grid to find the densest active region
+    const scanRadius = 1;
+    let originR = Math.floor(rows / 2);
+    let originC = Math.floor(cols / 2);
+    let totalActive = 0;
+    let maxLocal = -1;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (prevGrid && prevGrid[r] && prevGrid[r][c] === 1) {
+                totalActive++;
+            }
+            let local = 0;
+            for (let dr = -scanRadius; dr <= scanRadius; dr++) {
+                for (let dc = -scanRadius; dc <= scanRadius; dc++) {
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        if (prevGrid && prevGrid[nr] && prevGrid[nr][nc] === 1) {
+                            local++;
+                        }
+                    }
+                }
+            }
+            if (local > maxLocal) {
+                maxLocal = local;
+                originR = r;
+                originC = c;
+            }
+        }
+    }
 
     clearGrid(false);
 
     const foldThreshold = parseInt(foldSlider.value);
-    const radius = Math.max(2, pulseLength) + neighborThreshold + foldThreshold;
+    const base = totalActive + maxLocal + pulseLength + neighborThreshold + foldThreshold;
+    const radius = Math.max(2, Math.floor(Math.sqrt(base / 2)));
+
+    // Simple deterministic PRNG (linear congruential)
+    let seed = pulseLength * 31 + neighborThreshold * 17 + foldThreshold * 13;
+    function rand() {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296;
+    }
 
     for (let dr = -radius; dr <= radius; dr++) {
         for (let dc = -radius; dc <= radius; dc++) {
             const dist = Math.sqrt(dr * dr + dc * dc);
-            if (dist <= radius) {
-                const r = centerX + dr;
-                const c = centerY + dc;
+            if (dist + rand() * 0.5 <= radius) {
+                const r = originR + dr;
+                const c = originC + dc;
                 if (r >= 0 && r < rows && c >= 0 && c < cols) {
                     grid[r][c] = 1;
                     colorGrid[r][c] = currentColor;
