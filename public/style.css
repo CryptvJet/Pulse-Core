@@ -200,3 +200,9 @@ canvas.flash {
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+#resolutionWarning {
+    color: #f88;
+    font-weight: bold;
+    margin-left: 4px;
+}
