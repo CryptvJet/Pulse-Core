@@ -4,7 +4,7 @@ Pulse-Core is a browser-based sandbox that lets you play with a simple pulse sim
 
 ## Features
 
-- **Dynamic grid** – Each cell toggles between on and off as the simulation runs. The grid dimensions are based on your browser window (up to 500×500 cells) and the zoom slider changes the size of each cell.
+- **Dynamic grid** – Each cell toggles between on and off as the simulation runs. The grid dimensions are based on your browser window (up to 500×500 cells) and the zoom slider changes the size of each cell. Adjusting the zoom slider rebuilds the grid so it always fills the page.
 - **Start/Stop controls** – Start, stop and step backward through pulses with dedicated buttons.
 - **Adjustable behavior** – Tune pulse length, folding threshold and neighbor count while the simulation is running.
 - **Multiple tools** – Brush, pulse injector and pattern stamper let you build and experiment with different configurations. Right-click cells to erase.

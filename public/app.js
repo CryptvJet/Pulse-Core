@@ -79,19 +79,6 @@ function updateDimensions() {
     canvas.style.height = `${canvas.height}px`;
 }
 
-// Resize the canvas without recreating the grid
-function updateCanvasSize() {
-    cellSize = parseInt(zoomSlider.value);
-    if (cols > MAX_DIMENSION || rows > MAX_DIMENSION) {
-        const newSize = Math.ceil(Math.max(window.innerWidth, window.innerHeight) / MAX_DIMENSION);
-        cellSize = newSize;
-        zoomSlider.value = newSize;
-    }
-    canvas.width = cols * cellSize;
-    canvas.height = rows * cellSize;
-    canvas.style.width = `${canvas.width}px`;
-    canvas.style.height = `${canvas.height}px`;
-}
 
 function createGrid() {
     grid = [];
@@ -663,7 +650,8 @@ window.addEventListener('resize', () => {
 });
 
 zoomSlider.addEventListener('input', () => {
-    updateCanvasSize();
+    updateDimensions();
+    createGrid();
     drawGrid();
 });
 
