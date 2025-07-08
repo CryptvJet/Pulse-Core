@@ -38,6 +38,7 @@ const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
+const genesisSelect = document.getElementById('genesisModeSelect');
 const centerViewToggle = document.getElementById('centerViewToggle');
 const aboutLink = document.getElementById('aboutLink');
 const directionsLink = document.getElementById('directionsLink');
@@ -958,6 +959,7 @@ function init() {
     foldValueSpan.textContent = foldSlider.value;
     debugOverlay = debugCheckbox.checked;
     fieldTensionMode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
+    genesisMode = genesisSelect ? genesisSelect.value : 'stable';
 }
 
 window.addEventListener('resize', () => {
@@ -1018,6 +1020,12 @@ if (fieldTensionDropdown) {
     fieldTensionDropdown.addEventListener('change', () => {
         fieldTensionMode = fieldTensionDropdown.value;
         drawGrid();
+    });
+}
+
+if (genesisSelect) {
+    genesisSelect.addEventListener('change', (e) => {
+        genesisMode = e.target.value;
     });
 }
 
