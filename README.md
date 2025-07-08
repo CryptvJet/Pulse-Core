@@ -33,6 +33,18 @@ Adjusting the zoom slider now scales the existing grid so it always fills the wi
 
 Everything happens client-side, so once loaded you can use the tool without an internet connection.
 
+## Genesis Modes
+
+When a **Data Nova** occurs, the selected genesis mode seeds the initial pattern in a distinct way:
+
+- **Stable** – Creates a symmetrical square burst around the densest region.
+- **Chaotic** – Scatters random active cells across the field.
+- **Organic** – Forms a wavy cluster using a sine-based curve.
+- **Fractal** – Recursively lays out cells in a fractal cross pattern.
+- **Seeded** – Loads a user-defined pattern from memory.
+
+The current mode is displayed on screen and logged to the console whenever seeding happens.
+
 ## Development
 
 This repository uses ESLint for basic linting. Install dependencies and run:
