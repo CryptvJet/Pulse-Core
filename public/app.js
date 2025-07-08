@@ -702,8 +702,21 @@ function triggerInfoNova() {
     let originC = Math.floor(cols / 2);
     let maxScore = -1;
     let candidates = [];
+    let activeCells = [];
 
     if (prevGrid && prevGrid.length) {
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (prevGrid[r][c] === 1) {
+                    activeCells.push([r, c]);
+                }
+            }
+        }
+    }
+
+    if (activeCells.length === 1) {
+        [originR, originC] = activeCells[0];
+    } else if (prevGrid && prevGrid.length) {
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 let sum = 0;
