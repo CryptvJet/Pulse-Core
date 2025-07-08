@@ -24,10 +24,8 @@
         </div>
         <div id="genesisPhaseRow" class="controlRow">
             <label>Genesis Phase:</label>
-            <input type="radio" name="genesisPhase" id="prePhase" value="pre" checked>
-            <label for="prePhase">Pre-Pulse 🌌</label>
-            <input type="radio" name="genesisPhase" id="postPhase" value="post">
-            <label for="postPhase">Post-Pulse ⚡</label>
+            <input type="checkbox" id="postPhaseToggle">
+            <label for="postPhaseToggle">Post-Pulse ⚡</label>
         </div>
         <div id="controlButtons" class="controlRow">
             <button id="startBtn">Start</button>
@@ -129,6 +127,7 @@
 
     <canvas id="grid"></canvas>
     <div id="novaOverlay">Data Nova</div>
+    <div id="novaInfoBox" class="popupOverlay novaInfo"></div>
 
     <script type="module" src="public/app.js"></script>
     <script type="module">
