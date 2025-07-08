@@ -18,7 +18,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
   clears, explodes from the center and the simulation restarts.
 - **Genesis Mode** – Choose how Data Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
 
-The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
+The grid automatically resizes with your browser window. Use the **Resolution Limit** slider to cap the maximum grid size (250–2000 cells per side). Values above 800 display a warning as high resolutions may impact performance.
 Adjusting the zoom slider now scales the existing grid so it always fills the window.
 
 ## Running the Simulation

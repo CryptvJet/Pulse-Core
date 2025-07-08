@@ -33,7 +33,8 @@
         </div>
         <label>Frame Rate: <input type="range" id="frameRateSlider" min="50" max="1000" step="50" value="500"></label>
         <label>Collapse Threshold (Pulse Units): <input type="number" id="collapseThreshold" value="1" step="0.001"></label>
-        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10"></label>
+        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
+        <label>Resolution Limit: <input type="range" id="resolutionSlider" min="250" max="2000" step="50" value="500"><span id="resolutionWarning" class="warning" style="display:none;margin-left:4px;">⚠️ High resolution may impact performance</span></label>
         <label>Fold Threshold:
             <span id="foldValue">2</span>
             <input type="range" id="foldSlider" min="0" max="10" step="1" value="2">

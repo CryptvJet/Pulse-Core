@@ -40,6 +40,8 @@ const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
 const genesisSelect = document.getElementById('genesisModeSelect');
 const centerViewToggle = document.getElementById('centerViewToggle');
+const resolutionSlider = document.getElementById('resolutionSlider');
+const resolutionWarning = document.getElementById('resolutionWarning');
 const aboutLink = document.getElementById('aboutLink');
 const directionsLink = document.getElementById('directionsLink');
 const aboutPopup = document.getElementById('aboutPopup');
@@ -75,8 +77,8 @@ let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
 let offsetY = 0;
-// Maximum row/column count before zoom is restricted. Increase at your own risk
-const MAX_DIMENSION = 500;
+// Maximum row/column count before zoom is restricted.
+let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
 let pulseFlash = true;
 let lastFrameTime = performance.now();
@@ -102,8 +104,8 @@ function updateDimensions() {
     cols = Math.ceil(canvas.width / cellSize);
     rows = Math.ceil(canvas.height / cellSize);
 
-    if (cols > MAX_DIMENSION || rows > MAX_DIMENSION) {
-        const newSize = Math.ceil(Math.max(canvas.width, canvas.height) / MAX_DIMENSION);
+    if (cols > maxDimension || rows > maxDimension) {
+        const newSize = Math.ceil(Math.max(canvas.width, canvas.height) / maxDimension);
         cellSize = newSize;
         zoomSlider.value = newSize;
         cols = Math.ceil(canvas.width / cellSize);
@@ -928,6 +930,9 @@ function init() {
     centerView = centerViewToggle ? centerViewToggle.checked : false;
     updateDimensions();
     createGrid();
+    if (resolutionWarning) {
+        resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
+    }
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
@@ -955,6 +960,17 @@ zoomSlider.addEventListener('input', () => {
     updateZoom();
     drawGrid();
 });
+
+if (resolutionSlider) {
+    resolutionSlider.addEventListener('input', () => {
+        maxDimension = parseInt(resolutionSlider.value);
+        if (resolutionWarning) {
+            resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
+        }
+        updateDimensions();
+        drawGrid();
+    });
+}
 
 toolSelect.addEventListener('change', () => {
     tool = toolSelect.value;
