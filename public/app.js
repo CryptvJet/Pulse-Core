@@ -588,10 +588,35 @@ function clearGrid() {
 function randomizeGrid() {
     stop();
     createGrid();
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            grid[r][c] = Math.random() < 0.5 ? 1 : 0;
+
+    const size = 20;
+    const fillRatio = 0.8;
+
+    const areaRows = Math.min(size, rows);
+    const areaCols = Math.min(size, cols);
+    const startRow = Math.floor(Math.random() * Math.max(rows - areaRows + 1, 1));
+    const startCol = Math.floor(Math.random() * Math.max(cols - areaCols + 1, 1));
+
+    const total = areaRows * areaCols;
+    const maxFill = Math.floor(total * fillRatio);
+    const fillCount = Math.floor(Math.random() * (maxFill + 1));
+
+    const cells = [];
+    for (let r = 0; r < areaRows; r++) {
+        for (let c = 0; c < areaCols; c++) {
+            cells.push([startRow + r, startCol + c]);
         }
+    }
+
+    for (let i = cells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cells[i], cells[j]] = [cells[j], cells[i]];
+    }
+
+    for (let i = 0; i < fillCount; i++) {
+        const [r, c] = cells[i];
+        grid[r][c] = 1;
+        colorGrid[r][c] = currentColor;
     }
     drawGrid();
 }
