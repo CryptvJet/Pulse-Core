@@ -65,7 +65,7 @@ let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let fieldTensionMode = 'none';
 let activeCellCount = 0;
-let thresholdFactor = parseInt(thresholdInput.value || '4');
+let collapseThreshold = parseInt(thresholdInput.value || '1000');
 let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
@@ -77,7 +77,6 @@ let pulseFlash = true;
 let lastFrameTime = performance.now();
 let prevGrid = [];
 let accumulatedEnergy = 0;
-const collapseThreshold = 1000;
 
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
@@ -799,7 +798,7 @@ pulseLengthInput.addEventListener('input', () => {
 });
 
 thresholdInput.addEventListener('input', () => {
-    thresholdFactor = parseInt(thresholdInput.value || '4');
+    collapseThreshold = parseInt(thresholdInput.value || '1000');
 });
 
 frameRateSlider.addEventListener('input', () => {
