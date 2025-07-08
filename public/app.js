@@ -407,7 +407,7 @@ function update() {
     pulseEnergySpan.textContent = Math.round(accumulatedEnergy);
     prevGrid = copyGrid(grid);
     if (pulseCounter >= pulseLength && accumulatedEnergy >= collapseThreshold) {
-        triggerBigBang();
+        triggerInfoNova();
     }
 }
 
@@ -682,6 +682,31 @@ function triggerBigBang() {
     setTimeout(() => canvas.classList.remove('flash'), 100);
     clearGrid(false);
     console.log('Big Bang at', new Date().toISOString());
+}
+
+function triggerInfoNova() {
+    const centerX = Math.floor(grid.length / 2);
+    const centerY = Math.floor(grid[0].length / 2);
+
+    clearGrid(false);
+
+    grid[centerX][centerY] = 1;
+
+    const flicker = pulseCounter % 2;
+    for (let radius = 1; radius <= pulseLength; radius++) {
+        for (let angle = 0; angle < 360; angle += 45) {
+            const x = Math.floor(centerX + radius * Math.cos(angle * Math.PI / 180));
+            const y = Math.floor(centerY + radius * Math.sin(angle * Math.PI / 180));
+            if (grid[x] && grid[x][y] !== undefined) {
+                grid[x][y] = flicker;
+            }
+        }
+    }
+
+    accumulatedEnergy = 0;
+    pulseCounter = 0;
+
+    console.log('Info Nova at', new Date().toISOString());
 }
 
 function saveCurrentPattern() {
