@@ -33,6 +33,7 @@
             <span id="neighborValue">2</span>
             <input type="range" id="neighborSlider" min="0" max="8" step="1" value="2">
         </label>
+        <label id="pulseLengthLabel">Pulse Length: <input type="number" id="pulseLength" value="3" min="1" /></label>
         <label><input type="checkbox" id="debugOverlay"> Field Tension Mapping</label>
         <select id="fieldTensionMode" style="margin-top:4px">
             <option value="none" selected>None</option>
@@ -45,6 +46,9 @@
         <label><input type="checkbox" id="pulseFlash"> Pulse Flash</label>
         <label><input type="checkbox" id="gridLinesToggle" checked> Grid Lines</label>
         <label><input type="checkbox" id="centerViewToggle"> Center View</label>
+        <div>Frame Duration: <span id="frameDuration">0</span>ms</div>
+        <div>Complexity: <span id="frameComplexity">0</span></div>
+        <div>Pulse Energy: <span id="pulseEnergy">0</span></div>
     </div>
 
     <div id="tools">
@@ -56,7 +60,6 @@
             </select>
         </label>
         <label>Color: <input type="color" id="colorPicker" value="#00ff00"></label>
-        <label id="pulseLengthLabel">Injector Length: <input type="number" id="pulseLength" min="1" value="4"></label>
         <label id="patternLabel">Pattern:
             <select id="patternSelect"></select>
         </label>

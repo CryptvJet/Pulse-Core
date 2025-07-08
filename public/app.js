@@ -1,5 +1,5 @@
 import { getNeighborsSum, updateCellState } from './logic.js';
-import { countActiveCells, shouldBigBang } from './tension.js';
+import { countActiveCells } from './tension.js';
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -22,6 +22,9 @@ const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
 const tensionValueSpan = document.getElementById('tensionValue');
+const frameDurationSpan = document.getElementById('frameDuration');
+const frameComplexitySpan = document.getElementById('frameComplexity');
+const pulseEnergySpan = document.getElementById('pulseEnergy');
 const thresholdInput = document.getElementById('thresholdInput');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
@@ -71,6 +74,10 @@ let offsetY = 0;
 const MAX_DIMENSION = 500;
 
 let pulseFlash = true;
+let lastFrameTime = performance.now();
+let prevGrid = [];
+let accumulatedEnergy = 0;
+const collapseThreshold = 1000;
 
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
@@ -140,6 +147,7 @@ function createGrid() {
         flickerCountGrid.push(flickerRow);
         lastStateGrid.push(lastRow);
     }
+    prevGrid = copyGrid(grid);
 }
 
 function resizeGrid(oldRows, oldCols) {
@@ -174,6 +182,23 @@ function applyColorToGrid(color) {
             colorGrid[r][c] = color;
         }
     }
+}
+
+function copyGrid(src) {
+    return src.map(row => row.slice());
+}
+
+function countCellChanges(prev, curr) {
+    if (!prev || prev.length === 0) return 0;
+    let changes = 0;
+    for (let r = 0; r < prev.length; r++) {
+        for (let c = 0; c < prev[r].length; c++) {
+            if (prev[r][c] !== curr[r][c]) {
+                changes++;
+            }
+        }
+    }
+    return changes;
 }
 
 function drawGrid() {
@@ -296,6 +321,9 @@ function drawDualReactorChamber() {
 // Future folding mechanics can modify the grid here using foldSlider.value
 
 function update() {
+    const now = performance.now();
+    const frameDuration = now - lastFrameTime;
+    lastFrameTime = now;
     const foldThreshold = parseInt(foldSlider.value);
     if (reverse) {
         const prev = history.pop();
@@ -369,7 +397,14 @@ function update() {
     pulseCounterSpan.textContent = pulseCounter;
     activeCellCount = countActiveCells(grid);
     tensionValueSpan.textContent = activeCellCount;
-    if (shouldBigBang(activeCellCount, pulseLength, thresholdFactor)) {
+    const complexity = countCellChanges(prevGrid, grid);
+    const energyThisFrame = complexity * (frameDuration / 16);
+    accumulatedEnergy += energyThisFrame;
+    frameDurationSpan.textContent = Math.round(frameDuration);
+    frameComplexitySpan.textContent = complexity;
+    pulseEnergySpan.textContent = Math.round(accumulatedEnergy);
+    prevGrid = copyGrid(grid);
+    if (pulseCounter >= pulseLength && accumulatedEnergy >= collapseThreshold) {
         triggerBigBang();
     }
 }
@@ -563,6 +598,12 @@ function start() {
     stopBtn.disabled = false;
     pulseLength = parseInt(pulseLengthInput.value);
     pulseLengthInput.disabled = true;
+    lastFrameTime = performance.now();
+    accumulatedEnergy = 0;
+    prevGrid = copyGrid(grid);
+    frameDurationSpan.textContent = '0';
+    frameComplexitySpan.textContent = '0';
+    pulseEnergySpan.textContent = '0';
     const speed = parseInt(frameRateSlider.value);
     intervalId = setInterval(update, speed);
 }
@@ -581,13 +622,23 @@ function clearGrid() {
     pulses = [];
     history = [];
     pulseCounter = 0;
+    accumulatedEnergy = 0;
+    prevGrid = copyGrid(grid);
     pulseCounterSpan.textContent = pulseCounter;
+    frameDurationSpan.textContent = '0';
+    frameComplexitySpan.textContent = '0';
+    pulseEnergySpan.textContent = '0';
     drawGrid();
 }
 
 function randomizeGrid() {
     stop();
     createGrid();
+    prevGrid = copyGrid(grid);
+    accumulatedEnergy = 0;
+    frameDurationSpan.textContent = '0';
+    frameComplexitySpan.textContent = '0';
+    pulseEnergySpan.textContent = '0';
 
     const size = 20;
     const fillRatio = 0.8;
@@ -696,7 +747,9 @@ function init() {
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
-    pulseLengthLabel.style.display = 'none';
+    frameDurationSpan.textContent = '0';
+    frameComplexitySpan.textContent = '0';
+    pulseEnergySpan.textContent = '0';
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
     reverseBtn.textContent = 'Reverse';
@@ -720,7 +773,6 @@ zoomSlider.addEventListener('input', () => {
 
 toolSelect.addEventListener('change', () => {
     tool = toolSelect.value;
-    pulseLengthLabel.style.display = tool === 'pulse' ? 'block' : 'none';
     patternLabel.style.display = tool === 'stamper' ? 'block' : 'none';
 });
 
