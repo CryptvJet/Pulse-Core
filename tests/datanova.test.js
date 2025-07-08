@@ -56,3 +56,11 @@ test('triggerInfoNova uses single active cell as center', () => {
     expect(latestNovaCenter).toEqual([3, 4]);
 });
 
+test('triggerInfoNova averages position when density is tied', () => {
+    global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    prevGrid[0][0] = 1;
+    prevGrid[7][7] = 1;
+    triggerInfoNova();
+    expect(latestNovaCenter).toEqual([3, 3]);
+});
+

@@ -812,6 +812,7 @@ function triggerInfoNova() {
     let originR = Math.floor(rows / 2);
     let originC = Math.floor(cols / 2);
     let maxScore = -1;
+    let bestCells = [];
     let activeCells = [];
 
     if (prevGrid && prevGrid.length) {
@@ -826,7 +827,7 @@ function triggerInfoNova() {
 
     if (activeCells.length === 1) {
         [originR, originC] = activeCells[0];
-    } else if (prevGrid && prevGrid.length) {
+    } else if (activeCells.length > 0) {
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 let sum = 0;
@@ -841,10 +842,24 @@ function triggerInfoNova() {
                 }
                 if (sum > maxScore) {
                     maxScore = sum;
-                    originR = r;
-                    originC = c;
+                    bestCells = [[r, c]];
+                } else if (sum === maxScore) {
+                    bestCells.push([r, c]);
                 }
             }
+        }
+
+        if (bestCells.length === 1) {
+            [originR, originC] = bestCells[0];
+        } else {
+            let totalR = 0;
+            let totalC = 0;
+            for (const [r, c] of activeCells) {
+                totalR += r;
+                totalC += c;
+            }
+            originR = Math.floor(totalR / activeCells.length);
+            originC = Math.floor(totalC / activeCells.length);
         }
     }
 
