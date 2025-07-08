@@ -253,12 +253,14 @@ function drawGrid() {
             }
         }
     }
-    if (debugOverlay) {
-        const mode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
-        if (mode === 'none') {
-            clearFieldOverlay();
-        } else {
-            drawFieldTensionOverlay(mode);
+    if (debugOverlay || selectionPending) {
+        if (debugOverlay) {
+            const mode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
+            if (mode === 'none') {
+                clearFieldOverlay();
+            } else {
+                drawFieldTensionOverlay(mode);
+            }
         }
         const centers = latestNovaCenters && latestNovaCenters.length ? latestNovaCenters : (latestNovaCenter ? [latestNovaCenter] : []);
         centers.forEach(([nr, nc]) => {
