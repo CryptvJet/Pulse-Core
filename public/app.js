@@ -615,7 +615,7 @@ function stop() {
     clearInterval(intervalId);
 }
 
-function clearGrid() {
+function clearGrid(resetStats = true) {
     stop();
     createGrid();
     pulses = [];
@@ -623,10 +623,12 @@ function clearGrid() {
     pulseCounter = 0;
     accumulatedEnergy = 0;
     prevGrid = copyGrid(grid);
-    pulseCounterSpan.textContent = pulseCounter;
-    frameDurationSpan.textContent = '0';
-    frameComplexitySpan.textContent = '0';
-    pulseEnergySpan.textContent = '0';
+    if (resetStats) {
+        pulseCounterSpan.textContent = pulseCounter;
+        frameDurationSpan.textContent = '0';
+        frameComplexitySpan.textContent = '0';
+        pulseEnergySpan.textContent = '0';
+    }
     drawGrid();
 }
 
@@ -675,7 +677,7 @@ function randomizeGrid() {
 function triggerBigBang() {
     canvas.classList.add('flash');
     setTimeout(() => canvas.classList.remove('flash'), 100);
-    clearGrid();
+    clearGrid(false);
     console.log('Big Bang at', new Date().toISOString());
 }
 
