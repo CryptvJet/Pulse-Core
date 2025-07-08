@@ -26,6 +26,7 @@ const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
+const centerViewToggle = document.getElementById('centerViewToggle');
 const aboutLink = document.getElementById('aboutLink');
 const directionsLink = document.getElementById('directionsLink');
 const aboutPopup = document.getElementById('aboutPopup');
@@ -55,28 +56,54 @@ let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let fieldTensionMode = 'none';
 let showGridLines = true;
+let centerView = false;
+let offsetX = 0;
+let offsetY = 0;
 // Maximum row/column count before zoom is restricted. Increase at your own risk
 const MAX_DIMENSION = 500;
 
 let pulseFlash = true;
 
-function updateDimensions() {
+function updateZoom() {
     cellSize = parseInt(zoomSlider.value);
-    cols = Math.floor(window.innerWidth / cellSize);
-    rows = Math.floor(window.innerHeight / cellSize);
+    if (centerView) {
+        offsetX = Math.floor((canvas.width - cols * cellSize) / 2);
+        offsetY = Math.floor((canvas.height - rows * cellSize) / 2);
+    } else {
+        offsetX = 0;
+        offsetY = 0;
+    }
+}
+
+function updateDimensions() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const oldRows = rows || 0;
+    const oldCols = cols || 0;
+
+    cols = Math.ceil(canvas.width / cellSize);
+    rows = Math.ceil(canvas.height / cellSize);
 
     if (cols > MAX_DIMENSION || rows > MAX_DIMENSION) {
-        const newSize = Math.ceil(Math.max(window.innerWidth, window.innerHeight) / MAX_DIMENSION);
+        const newSize = Math.ceil(Math.max(canvas.width, canvas.height) / MAX_DIMENSION);
         cellSize = newSize;
         zoomSlider.value = newSize;
-        cols = Math.floor(window.innerWidth / cellSize);
-        rows = Math.floor(window.innerHeight / cellSize);
+        cols = Math.ceil(canvas.width / cellSize);
+        rows = Math.ceil(canvas.height / cellSize);
     }
 
-    canvas.width = cols * cellSize;
-    canvas.height = rows * cellSize;
-    canvas.style.width = `${canvas.width}px`;
-    canvas.style.height = `${canvas.height}px`;
+    if (rows !== oldRows || cols !== oldCols) {
+        resizeGrid(oldRows, oldCols);
+    }
+
+    if (centerView) {
+        offsetX = Math.floor((canvas.width - cols * cellSize) / 2);
+        offsetY = Math.floor((canvas.height - rows * cellSize) / 2);
+    } else {
+        offsetX = 0;
+        offsetY = 0;
+    }
 }
 
 
@@ -111,6 +138,31 @@ function createGrid() {
     }
 }
 
+function resizeGrid(oldRows, oldCols) {
+    function copy(src, fill) {
+        const arr = [];
+        for (let r = 0; r < rows; r++) {
+            const row = [];
+            for (let c = 0; c < cols; c++) {
+                if (r < oldRows && c < oldCols && src[r] && src[r][c] !== undefined) {
+                    row.push(src[r][c]);
+                } else {
+                    row.push(fill);
+                }
+            }
+            arr.push(row);
+        }
+        return arr;
+    }
+
+    grid = copy(grid, 0);
+    colorGrid = copy(colorGrid, currentColor);
+    residueGrid = copy(residueGrid, 0);
+    foldGrid = copy(foldGrid, 0);
+    flickerCountGrid = copy(flickerCountGrid, 0);
+    lastStateGrid = copy(lastStateGrid, 0);
+}
+
 // Set every cell in colorGrid to the provided color
 function applyColorToGrid(color) {
     for (let r = 0; r < rows; r++) {
@@ -139,13 +191,13 @@ function drawGrid() {
             } else {
                 ctx.fillStyle = '#222';
             }
-            ctx.fillRect(c * cellSize, r * cellSize, drawSize, drawSize);
+            ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (debugOverlay) {
                 const n = getNeighborsSum(r, c);
                 ctx.fillStyle = 'white';
                 const disp = neighborThreshold === 0 ? grid[r][c] : n;
-                ctx.fillText(disp, c * cellSize + 2, r * cellSize + 2);
+                ctx.fillText(disp, c * cellSize + offsetX + 2, r * cellSize + offsetY + 2);
             }
         }
     }
@@ -190,39 +242,49 @@ function clearFieldOverlay() {
 function drawPulseBarrierTest31() {
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(cellSize * 2, cellSize * 2, canvas.width - cellSize * 4, canvas.height - cellSize * 4);
+    const w = cols * cellSize;
+    const h = rows * cellSize;
+    ctx.strokeRect(offsetX + cellSize * 2, offsetY + cellSize * 2, w - cellSize * 4, h - cellSize * 4);
 }
 
 function drawWaveguideLockA() {
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
     ctx.lineWidth = 2;
+    const w = cols * cellSize;
+    const h = rows * cellSize;
     ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, cellSize);
-    ctx.lineTo(canvas.width / 2, canvas.height - cellSize);
+    ctx.moveTo(offsetX + w / 2, offsetY + cellSize);
+    ctx.lineTo(offsetX + w / 2, offsetY + h - cellSize);
     ctx.stroke();
 }
 
 function drawSymmetricChannelField() {
     ctx.strokeStyle = 'rgba(0, 0, 255, 0.6)';
     ctx.lineWidth = 2;
+    const w = cols * cellSize;
+    const h = rows * cellSize;
     ctx.beginPath();
-    ctx.moveTo(cellSize, canvas.height / 2);
-    ctx.lineTo(canvas.width - cellSize, canvas.height / 2);
+    ctx.moveTo(offsetX + cellSize, offsetY + h / 2);
+    ctx.lineTo(offsetX + w - cellSize, offsetY + h / 2);
     ctx.stroke();
 }
 
 function drawContainmentCorridor1() {
     ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(cellSize, cellSize, canvas.width - cellSize * 2, canvas.height - cellSize * 2);
+    const w = cols * cellSize;
+    const h = rows * cellSize;
+    ctx.strokeRect(offsetX + cellSize, offsetY + cellSize, w - cellSize * 2, h - cellSize * 2);
 }
 
 function drawDualReactorChamber() {
     ctx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
     ctx.lineWidth = 2;
-    const mid = canvas.width / 2;
-    ctx.strokeRect(cellSize, cellSize, mid - cellSize * 1.5, canvas.height - cellSize * 2);
-    ctx.strokeRect(mid + cellSize * 0.5, cellSize, mid - cellSize * 1.5, canvas.height - cellSize * 2);
+    const w = cols * cellSize;
+    const h = rows * cellSize;
+    const mid = w / 2;
+    ctx.strokeRect(offsetX + cellSize, offsetY + cellSize, mid - cellSize * 1.5, h - cellSize * 2);
+    ctx.strokeRect(offsetX + mid + cellSize * 0.5, offsetY + cellSize, mid - cellSize * 1.5, h - cellSize * 2);
 }
 
 // Return the total of all eight neighbors around (r, c)
@@ -504,8 +566,8 @@ function getCellFromEvent(event) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const x = (event.clientX - rect.left) * scaleX;
-    const y = (event.clientY - rect.top) * scaleY;
+    const x = (event.clientX - rect.left) * scaleX - offsetX;
+    const y = (event.clientY - rect.top) * scaleY - offsetY;
     const c = Math.floor(x / cellSize);
     const r = Math.floor(y / cellSize);
     return { r, c };
@@ -627,6 +689,7 @@ function saveCurrentPattern() {
 }
 
 function init() {
+    centerView = centerViewToggle ? centerViewToggle.checked : false;
     updateDimensions();
     createGrid();
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
@@ -650,8 +713,7 @@ window.addEventListener('resize', () => {
 });
 
 zoomSlider.addEventListener('input', () => {
-    updateDimensions();
-    createGrid();
+    updateZoom();
     drawGrid();
 });
 
@@ -706,6 +768,14 @@ if (pulseFlashCheckbox) {
 if (gridLinesToggle) {
     gridLinesToggle.addEventListener('change', () => {
         showGridLines = gridLinesToggle.checked;
+        drawGrid();
+    });
+}
+
+if (centerViewToggle) {
+    centerViewToggle.addEventListener('change', () => {
+        centerView = centerViewToggle.checked;
+        updateDimensions();
         drawGrid();
     });
 }
