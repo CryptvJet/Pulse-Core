@@ -3,7 +3,7 @@ export default [
     files: ["public/*.js"],
     languageOptions: {
       ecmaVersion: 2021,
-      sourceType: "script"
+      sourceType: "module"
     },
     ignores: [],
     rules: {

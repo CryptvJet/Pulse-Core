@@ -1,3 +1,5 @@
+import { getNeighborsSum, updateCellState } from './logic.js';
+import { countActiveCells, shouldBigBang } from './tension.js';
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -6,17 +8,20 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
-const speedSlider = document.getElementById('speedSlider');
+const frameRateSlider = document.getElementById('frameRateSlider');
 const foldSlider = document.getElementById('foldSlider');
 const foldValueSpan = document.getElementById('foldValue');
 const zoomSlider = document.getElementById('zoomSlider');
 const toolSelect = document.getElementById('toolSelect');
 const pulseLengthInput = document.getElementById('pulseLength');
+let pulseLength = parseInt(pulseLengthInput.value);
 const patternSelect = document.getElementById('patternSelect');
 const pulseLengthLabel = document.getElementById('pulseLengthLabel');
 const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
+const tensionValueSpan = document.getElementById('tensionValue');
+const thresholdInput = document.getElementById('thresholdInput');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
@@ -55,6 +60,8 @@ const MAX_HISTORY = 200;
 let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let fieldTensionMode = 'none';
+let activeCellCount = 0;
+let thresholdFactor = parseInt(thresholdInput.value || '4');
 let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
@@ -190,7 +197,7 @@ function drawGrid() {
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (debugOverlay) {
-                const n = getNeighborsSum(r, c);
+                const n = getNeighborsSum(grid, r, c);
                 ctx.fillStyle = 'white';
                 const disp = neighborThreshold === 0 ? grid[r][c] : n;
                 ctx.fillText(disp, c * cellSize + offsetX + 2, r * cellSize + offsetY + 2);
@@ -284,60 +291,6 @@ function drawDualReactorChamber() {
 }
 
 // Return the total of all eight neighbors around (r, c)
-function getNeighborsSum(r, c) {
-    let sum = 0;
-    for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue; // skip the cell itself
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                sum += grid[nr][nc];
-            }
-        }
-    }
-    return sum;
-}
-
-// Update a single cell and return its new value and fold state
-function updateCellState(r, c, n, foldThreshold) {
-    let val = grid[r][c];
-    let folded = false;
-
-    if (foldThreshold > 0 && flickerCountGrid[r][c] >= foldThreshold) {
-        val = 0;
-        folded = true;
-        flickerCountGrid[r][c] = 0;
-    } else {
-        if (neighborThreshold === 0) {
-            val = grid[r][c] ? 0 : 1;
-        } else {
-            val = n === neighborThreshold ? 1 : 0;
-        }
-
-        if (residueGrid[r][c] > 0) {
-            val = 1;
-            residueGrid[r][c]--;
-        }
-
-        if (foldThreshold > 0 && n > foldThreshold) {
-            val = 0;
-            folded = true;
-            flickerCountGrid[r][c] = 0;
-        }
-
-        if (!folded) {
-            if (val !== lastStateGrid[r][c]) {
-                flickerCountGrid[r][c] += 1;
-            } else {
-                flickerCountGrid[r][c] = 0;
-            }
-        }
-    }
-
-    lastStateGrid[r][c] = val;
-    return { val, folded };
-}
 // Update all cells based on the neighbor threshold
 // Future folding mechanics can modify the grid here using foldSlider.value
 
@@ -364,8 +317,8 @@ function update() {
             const row = [];
             const foldRow = [];
             for (let c = 0; c < cols; c++) {
-                const n = getNeighborsSum(r, c);
-                const { val, folded } = updateCellState(r, c, n, foldThreshold);
+                const n = getNeighborsSum(grid, r, c);
+                const { val, folded } = updateCellState({ grid, residueGrid, lastStateGrid, flickerCountGrid, neighborThreshold, r, c, n, foldThreshold });
 
                 if (debugOverlay) {
                     console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
@@ -413,6 +366,11 @@ function update() {
     }
     drawGrid();
     pulseCounterSpan.textContent = pulseCounter;
+    activeCellCount = countActiveCells(grid);
+    tensionValueSpan.textContent = activeCellCount;
+    if (shouldBigBang(activeCellCount, pulseLength, thresholdFactor)) {
+        triggerBigBang();
+    }
 }
 
 function extractPatternSubgrid(centerR, centerC, size) {
@@ -521,7 +479,7 @@ function applyTool(r, c) {
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
     } else if (tool === 'pulse') {
-        const len = parseInt(pulseLengthInput.value) || 1;
+        const len = running ? pulseLength : (parseInt(pulseLengthInput.value) || 1);
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
         grid[r][c] = 1; // Ensure the pulse cell is active immediately
         colorGrid[r][c] = currentColor;
@@ -602,7 +560,9 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    const speed = parseInt(speedSlider.value);
+    pulseLength = parseInt(pulseLengthInput.value);
+    pulseLengthInput.disabled = true;
+    const speed = parseInt(frameRateSlider.value);
     intervalId = setInterval(update, speed);
 }
 
@@ -610,6 +570,7 @@ function stop() {
     running = false;
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    pulseLengthInput.disabled = false;
     clearInterval(intervalId);
 }
 
@@ -621,6 +582,13 @@ function clearGrid() {
     pulseCounter = 0;
     pulseCounterSpan.textContent = pulseCounter;
     drawGrid();
+}
+
+function triggerBigBang() {
+    canvas.classList.add('flash');
+    setTimeout(() => canvas.classList.remove('flash'), 100);
+    clearGrid();
+    console.log('Big Bang at', new Date().toISOString());
 }
 
 function saveCurrentPattern() {
@@ -734,10 +702,20 @@ foldSlider.addEventListener('input', () => {
     foldValueSpan.textContent = foldSlider.value;
 });
 
-speedSlider.addEventListener('input', () => {
+pulseLengthInput.addEventListener('input', () => {
+    if (!running) {
+        pulseLength = parseInt(pulseLengthInput.value);
+    }
+});
+
+thresholdInput.addEventListener('input', () => {
+    thresholdFactor = parseInt(thresholdInput.value || '4');
+});
+
+frameRateSlider.addEventListener('input', () => {
     if (running) {
         clearInterval(intervalId);
-        const speed = parseInt(speedSlider.value);
+        const speed = parseInt(frameRateSlider.value);
         intervalId = setInterval(update, speed);
     }
 });
