@@ -14,9 +14,9 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
 - **Optional overlays** – Toggle pulse flash, field tension mapping and grid lines.
 - **Center View option** – Keep the field centered while zooming or resizing.
-- **Info Nova** – If accumulated energy exceeds the collapse threshold, the grid
+- **Data Nova** – If accumulated energy exceeds the collapse threshold, the grid
   clears, explodes from the center and the simulation restarts.
-- **Genesis Mode** – Choose how Info Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
+- **Genesis Mode** – Choose how Data Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
 
 The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
 Adjusting the zoom slider now scales the existing grid so it always fills the window.
@@ -27,7 +27,7 @@ Adjusting the zoom slider now scales the existing grid so it always fills the wi
 2. Select a tool and draw directly on the canvas. Right-click to erase cells.
 3. Press **Start** to begin pulsing; **Stop** pauses the animation.
 4. Adjust sliders and checkboxes to experiment with different behaviors. The collapse threshold (in Pulse Units) controls how much energy accumulates before the field clears.
-5. When the threshold is crossed, an **Info Nova** burst clears the grid, shows a brief message and resumes from frame 0.
+5. When the threshold is crossed, a **Data Nova** burst clears the grid, shows a brief message and resumes from frame 0.
 5. Save your design with **Save Pattern** or restore a previous one with **Upload Pattern**.
 6. Use **Randomize** to populate the current grid with randomly placed cells.
 
