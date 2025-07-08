@@ -8,6 +8,7 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const clearBtn = document.getElementById('clearBtn');
+const randomizeBtn = document.getElementById('randomizeBtn');
 const frameRateSlider = document.getElementById('frameRateSlider');
 const foldSlider = document.getElementById('foldSlider');
 const foldValueSpan = document.getElementById('foldValue');
@@ -584,6 +585,23 @@ function clearGrid() {
     drawGrid();
 }
 
+function randomizeGrid() {
+    stop();
+    rows = 50;
+    cols = 50;
+    cellSize = 10;
+    zoomSlider.value = cellSize;
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+    createGrid();
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            grid[r][c] = Math.random() < 0.5 ? 1 : 0;
+        }
+    }
+    drawGrid();
+}
+
 function triggerBigBang() {
     canvas.classList.add('flash');
     setTimeout(() => canvas.classList.remove('flash'), 100);
@@ -768,6 +786,7 @@ canvas.addEventListener('contextmenu', e => e.preventDefault());
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
+randomizeBtn.addEventListener('click', randomizeGrid);
 
 function openPopup(el) {
     if (el) {

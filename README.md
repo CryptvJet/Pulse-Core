@@ -6,6 +6,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 
 - **Interactive grid** – Click and drag to paint cells even while the simulation runs.
 - **Start/Stop controls** – Run or pause the pulse engine at any time.
+- **Randomize button** – Generate a new 50×50 grid of random cells.
 - **Adjustable sliders** – Tune pulse length, fold threshold, zoom level and neighbor count on the fly.
 - **Tool selection** – Switch between brush, pulse injector and pattern stamper. Right-click cells to erase.
 - **Color picker** – Choose the color used for brush strokes, injected pulses and stamped patterns.
@@ -24,6 +25,7 @@ Adjusting the zoom slider now scales the existing grid so it always fills the wi
 3. Press **Start** to begin pulsing; **Stop** pauses the animation.
 4. Adjust sliders and checkboxes to experiment with different behaviors.
 5. Save your design with **Save Pattern** or restore a previous one with **Upload Pattern**.
+6. Use **Randomize** to fill a new 50×50 grid with random values.
 
 Everything happens client-side, so once loaded you can use the tool without an internet connection.
 
