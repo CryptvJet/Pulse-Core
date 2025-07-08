@@ -655,6 +655,7 @@ function stop() {
     stopBtn.disabled = true;
     pulseLengthInput.disabled = false;
     clearInterval(intervalId);
+    stateLabel.textContent = 'State: Paused';
 }
 
 function clearGrid(resetStats = true) {
