@@ -745,84 +745,72 @@ function triggerInfoNova() {
 
     clearGrid(false);
 
-    const foldThreshold = parseInt(foldSlider.value);
-    const normalizationFactor = 30;
-    let radius = Math.sqrt(accumulatedEnergy) / normalizationFactor;
-    radius = Math.max(2, radius);
-
-    const maxCells = Math.floor(rows * cols * 0.15);
-    const maxRadius = Math.sqrt(maxCells / Math.PI);
-    radius = Math.min(radius, maxRadius);
-
     let placed = 0;
 
-    function seedFractal(cr, cc, rad) {
-        if (placed >= maxCells || rad < 1) return;
-        for (let dr = -rad; dr <= rad; dr++) {
-            for (let dc = -rad; dc <= rad; dc++) {
-                const dist = Math.sqrt(dr * dr + dc * dc);
-                if (dist <= rad) {
-                    const r = cr + dr;
-                    const c = cc + dc;
-                    if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                        if (!grid[r][c]) placed++;
-                        grid[r][c] = 1;
-                        colorGrid[r][c] = currentColor;
-                        if (placed >= maxCells) return;
-                    }
+    function seedFractal(cr, cc, depth) {
+        if (depth <= 0) return;
+        for (let dr = -depth; dr <= depth; dr++) {
+            for (let dc = -depth; dc <= depth; dc++) {
+                const r = cr + dr;
+                const c = cc + dc;
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    grid[r][c] = 1;
+                    colorGrid[r][c] = currentColor;
                 }
             }
         }
-        seedFractal(cr - rad, cc, Math.floor(rad / 2));
-        seedFractal(cr + rad, cc, Math.floor(rad / 2));
-        seedFractal(cr, cc - rad, Math.floor(rad / 2));
-        seedFractal(cr, cc + rad, Math.floor(rad / 2));
+        seedFractal(cr - depth, cc, depth - 1);
+        seedFractal(cr + depth, cc, depth - 1);
+        seedFractal(cr, cc - depth, depth - 1);
+        seedFractal(cr, cc + depth, depth - 1);
     }
 
     console.log('Using genesis mode:', genesisMode);
 
     switch (genesisMode) {
-    case 'chaotic': {
-        while (placed < maxCells) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = Math.random() * radius;
-            const dr = Math.round(Math.cos(angle) * dist);
-            const dc = Math.round(Math.sin(angle) * dist);
-            const r = originR + dr;
-            const c = originC + dc;
-            if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                if (!grid[r][c]) placed++;
-                grid[r][c] = 1;
-                colorGrid[r][c] = currentColor;
+    case 'stable':
+        console.log('Using STABLE genesis mode');
+        for (let r = originR - 5; r <= originR + 5; r++) {
+            for (let c = originC - 5; c <= originC + 5; c++) {
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    grid[r][c] = 1;
+                    colorGrid[r][c] = currentColor;
+                }
             }
         }
         break;
-    }
-    case 'organic': {
-        for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
-            for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
-                const dist = Math.sqrt(dr * dr + dc * dc);
-                if (dist <= radius) {
-                    const noise = (Math.sin(dr * 0.5) * Math.cos(dc * 0.5) + 1) / 2;
-                    if (Math.random() < noise && placed < maxCells) {
-                        const r = originR + dr;
-                        const c = originC + dc;
-                        if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                            if (!grid[r][c]) placed++;
-                            grid[r][c] = 1;
-                            colorGrid[r][c] = currentColor;
-                        }
+    case 'chaotic':
+        console.log('Using CHAOTIC genesis mode');
+        placed = Math.floor(rows * cols * 0.05);
+        for (let i = 0; i < placed; i++) {
+            const r = Math.floor(Math.random() * rows);
+            const c = Math.floor(Math.random() * cols);
+            grid[r][c] = 1;
+            colorGrid[r][c] = currentColor;
+        }
+        break;
+    case 'fractal':
+        console.log('Using FRACTAL genesis mode');
+        seedFractal(originR, originC, 3);
+        break;
+    case 'organic':
+        console.log('Using ORGANIC genesis mode');
+        for (let r = originR - 10; r <= originR + 10; r++) {
+            for (let c = originC - 10; c <= originC + 10; c++) {
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    const dx = c - originC;
+                    const dy = r - originR;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (Math.sin(dist * 0.5) > 0.5) {
+                        grid[r][c] = 1;
+                        colorGrid[r][c] = currentColor;
                     }
                 }
             }
         }
         break;
-    }
-    case 'fractal': {
-        seedFractal(originR, originC, Math.floor(radius));
-        break;
-    }
-    case 'seeded': {
+    case 'seeded':
+        console.log('Using SEEDED genesis mode');
         const pattern = [
             [0, 1, 0],
             [1, 1, 1],
@@ -830,37 +818,20 @@ function triggerInfoNova() {
         ];
         for (let r = 0; r < 3; r++) {
             for (let c = 0; c < 3; c++) {
-                if (pattern[r][c] === 1) {
+                if (pattern[r][c]) {
                     const nr = originR + r - 1;
                     const nc = originC + c - 1;
                     if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
                         grid[nr][nc] = 1;
                         colorGrid[nr][nc] = currentColor;
-                        placed++;
-                        if (placed >= maxCells) break;
                     }
                 }
             }
         }
         break;
-    }
-    case 'stable':
-    default: {
-        for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
-            for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
-                const dist = Math.sqrt(dr * dr + dc * dc);
-                if (dist <= radius && placed < maxCells) {
-                    const r = originR + dr;
-                    const c = originC + dc;
-                    if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                        if (!grid[r][c]) placed++;
-                        grid[r][c] = 1;
-                        colorGrid[r][c] = currentColor;
-                    }
-                }
-            }
-        }
-    }
+    default:
+        console.log('Unknown genesis mode:', genesisMode);
+        break;
     }
 
     accumulatedEnergy = 0;
