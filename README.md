@@ -14,9 +14,10 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
 - **Optional overlays** – Toggle pulse flash, field tension mapping and grid lines.
 - **Center View option** – Keep the field centered while zooming or resizing.
-- **Data Nova** – If accumulated energy exceeds the collapse threshold, the grid
-  clears, explodes from the center and the simulation restarts.
+ - **Data Nova** – If accumulated energy exceeds the collapse threshold, the grid
+  clears and one or more novas explode from the densest regions before the simulation restarts.
 - **Genesis Mode** – Choose how Data Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
+- **Genesis Phase** – Decide whether multiple novas collapse in Pre-Pulse (manual selection) or Post-Pulse (automatic) mode.
 
 The grid automatically resizes with your browser window. Use the **Resolution Limit** slider to cap the maximum grid size (250–2000 cells per side). Values above 800 display a warning as high resolutions may impact performance.
 Adjusting the zoom slider now scales the existing grid so it always fills the window.
@@ -42,6 +43,10 @@ When a **Data Nova** occurs, the selected genesis mode seeds the initial pattern
 - **Organic** – Forms a wavy cluster using a sine-based curve.
 - **Fractal** – Recursively lays out cells in a fractal cross pattern.
 - **Seeded** – Loads a user-defined pattern from memory.
+
+The **Genesis Phase** toggle determines whether, when multiple dense regions tie,
+you select one origin before the first frame (Pre-Pulse) or all activate automatically
+after the pulse begins (Post-Pulse).
 
 The current mode is displayed on screen and logged to the console whenever seeding happens.
 
@@ -69,7 +74,7 @@ Once the packages are installed you can execute the test suite with:
 npm test
 ```
 
-`npm test` currently outputs a placeholder message but establishes a spot for future tests.
+`npm test` runs the Jest suite which validates multi-nova logic, genesis modes and other utilities.
 
 The project is released under the MIT License (see `LICENSE`).
 

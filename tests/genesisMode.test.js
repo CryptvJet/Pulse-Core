@@ -1,5 +1,5 @@
 let triggerInfoNova;
-let latestNovaCenter;
+let latestNovaCenters;
 
 beforeEach(async () => {
     jest.resetModules();
@@ -13,7 +13,7 @@ beforeEach(async () => {
     `;
     const mod = await import('../public/app.js');
     triggerInfoNova = mod.triggerInfoNova;
-    latestNovaCenter = mod.latestNovaCenter;
+    latestNovaCenters = mod.latestNovaCenters;
     global.rows = 20;
     global.cols = 20;
     global.grid = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -34,7 +34,7 @@ beforeEach(async () => {
 test('stable genesis creates centered square', () => {
     global.genesisMode = 'stable';
     triggerInfoNova();
-    const [r0, c0] = latestNovaCenter;
+    const [r0, c0] = latestNovaCenters[0];
     let active = 0;
     for (let r = r0 - 5; r <= r0 + 5; r++) {
         for (let c = c0 - 5; c <= c0 + 5; c++) {
@@ -50,7 +50,7 @@ test('stable genesis creates centered square', () => {
 test('seeded genesis creates cross', () => {
     global.genesisMode = 'seeded';
     triggerInfoNova();
-    const [r0, c0] = latestNovaCenter;
+    const [r0, c0] = latestNovaCenters[0];
     const coords = [
         [r0, c0],
         [r0 - 1, c0],

@@ -40,6 +40,7 @@ const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
 const genesisSelect = document.getElementById('genesisModeSelect');
+const genesisPhaseRadios = document.querySelectorAll('input[name="genesisPhase"]');
 const centerViewToggle = document.getElementById('centerViewToggle');
 const resolutionSlider = document.getElementById('resolutionSlider');
 const resolutionWarning = document.getElementById('resolutionWarning');
@@ -88,7 +89,18 @@ let timeElapsed = 0;
 let prevGrid = [];
 let accumulatedEnergy = 0;
 let latestNovaCenter = null;
+let latestNovaCenters = [];
 let genesisMode = 'stable'; // stable | chaotic | organic | fractal | seeded
+let genesisPhase = 'pre'; // pre | post
+let selectionPending = false;
+
+function lockGenesisPhase() {
+    genesisPhaseRadios.forEach(r => { r.disabled = true; });
+}
+
+function unlockGenesisPhase() {
+    genesisPhaseRadios.forEach(r => { r.disabled = false; });
+}
 
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
@@ -248,16 +260,16 @@ function drawGrid() {
         } else {
             drawFieldTensionOverlay(mode);
         }
-        if (latestNovaCenter) {
-            ctx.strokeStyle = 'red';
+        const centers = latestNovaCenters && latestNovaCenters.length ? latestNovaCenters : (latestNovaCenter ? [latestNovaCenter] : []);
+        centers.forEach(([nr, nc]) => {
+            ctx.strokeStyle = selectionPending ? '#0f0' : 'red';
             ctx.lineWidth = 2;
-            const [nr, nc] = latestNovaCenter;
             const x = nc * cellSize + offsetX + cellSize / 2;
             const y = nr * cellSize + offsetY + cellSize / 2;
             ctx.beginPath();
             ctx.arc(x, y, cellSize * 1.5, 0, Math.PI * 2);
             ctx.stroke();
-        }
+        });
     }
 }
 
@@ -349,6 +361,7 @@ function update() {
         accumulatedEnergy = 0;
         timeElapsed = 0;
         pulseCounter = 1;
+        lockGenesisPhase();
         pulseCounterSpan.textContent = pulseCounter;
         stateLabel.textContent = 'State: Pulsing';
         stateLabel.classList.add('pulse-start');
@@ -660,6 +673,7 @@ function stop() {
 
 function clearGrid(resetStats = true) {
     stop();
+    unlockGenesisPhase();
     createGrid();
     pulses = [];
     history = [];
@@ -680,6 +694,7 @@ function clearGrid(resetStats = true) {
 
 function randomizeGrid() {
     stop();
+    unlockGenesisPhase();
     createGrid();
     prevGrid = copyGrid(grid);
     accumulatedEnergy = 0;
@@ -809,25 +824,10 @@ function loadPatternFromMemory(cr, cc) {
 
 function triggerInfoNova() {
     const searchRadius = Math.max(2, Math.min(5, Math.floor(Math.min(rows, cols) / 4)));
-    let originR = Math.floor(rows / 2);
-    let originC = Math.floor(cols / 2);
     let maxScore = -1;
-    let bestCells = [];
-    let activeCells = [];
+    let novaCandidates = [];
 
     if (prevGrid && prevGrid.length) {
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (prevGrid[r][c] === 1) {
-                    activeCells.push([r, c]);
-                }
-            }
-        }
-    }
-
-    if (activeCells.length === 1) {
-        [originR, originC] = activeCells[0];
-    } else if (activeCells.length > 0) {
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 let sum = 0;
@@ -842,75 +842,134 @@ function triggerInfoNova() {
                 }
                 if (sum > maxScore) {
                     maxScore = sum;
-                    bestCells = [[r, c]];
+                    novaCandidates = [[r, c]];
                 } else if (sum === maxScore) {
-                    bestCells.push([r, c]);
+                    novaCandidates.push([r, c]);
                 }
             }
         }
+    }
 
-        if (bestCells.length === 1) {
-            [originR, originC] = bestCells[0];
-        } else {
-            let totalR = 0;
-            let totalC = 0;
-            for (const [r, c] of activeCells) {
-                totalR += r;
-                totalC += c;
+    function clusterPoints(points, radius) {
+        const clusters = [];
+        const visited = new Set();
+        const r2 = radius * radius;
+        for (const [r, c] of points) {
+            const key = r + ',' + c;
+            if (visited.has(key)) continue;
+            const stack = [[r, c]];
+            const cluster = [];
+            visited.add(key);
+            while (stack.length) {
+                const [cr, cc] = stack.pop();
+                cluster.push([cr, cc]);
+                for (const [nr, nc] of points) {
+                    const nk = nr + ',' + nc;
+                    if (!visited.has(nk)) {
+                        const dist2 = (nr - cr) * (nr - cr) + (nc - cc) * (nc - cc);
+                        if (dist2 <= r2) {
+                            visited.add(nk);
+                            stack.push([nr, nc]);
+                        }
+                    }
+                }
             }
-            originR = Math.floor(totalR / activeCells.length);
-            originC = Math.floor(totalC / activeCells.length);
+            clusters.push(cluster);
         }
+        return clusters;
     }
 
-    latestNovaCenter = [originR, originC];
+    const clusters = clusterPoints(novaCandidates, searchRadius);
+    latestNovaCenters = clusters.map(cluster => {
+        let tr = 0, tc = 0;
+        cluster.forEach(([r, c]) => { tr += r; tc += c; });
+        return [Math.round(tr / cluster.length), Math.round(tc / cluster.length)];
+    });
 
-    console.log("Data Nova Origin:", originR, originC);
+    if (latestNovaCenters.length === 0) {
+        latestNovaCenters = [[Math.floor(rows / 2), Math.floor(cols / 2)]];
+    }
+    latestNovaCenter = latestNovaCenters[0];
 
-    clearGrid(false);
-
-    console.log('Seeding: ' + genesisMode);
-    if (novaOverlay) {
-        const modeDisplay = genesisMode.charAt(0).toUpperCase() + genesisMode.slice(1);
-        novaOverlay.innerHTML = modeDisplay + '<br>Data Nova';
+    if (genesisPhase === 'pre' && pulseCounter === 0 && latestNovaCenters.length > 1) {
+        selectionPending = true;
+        stop();
+        drawGrid();
+        if (novaOverlay) {
+            novaOverlay.textContent = 'Choose Timeline';
+            novaOverlay.classList.add('show');
+        }
+        const handler = (e) => {
+            if (!selectionPending) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - offsetX;
+            const y = e.clientY - rect.top - offsetY;
+            const r = Math.floor(y / cellSize);
+            const c = Math.floor(x / cellSize);
+            let chosen = null;
+            let best = Infinity;
+            latestNovaCenters.forEach(pt => {
+                const d = Math.hypot(pt[0] - r, pt[1] - c);
+                if (d < best) { best = d; chosen = pt; }
+            });
+            if (chosen) {
+                selectionPending = false;
+                canvas.removeEventListener('click', handler);
+                latestNovaCenters = [chosen];
+                latestNovaCenter = chosen;
+                novaOverlay.classList.remove('show');
+                performNovaSequence();
+            }
+        };
+        canvas.addEventListener('click', handler);
+        return;
     }
 
-    switch (genesisMode) {
-    case 'stable':
-        seedSymmetricalBurst(originR, originC);
-        break;
-    case 'chaotic':
-        seedRandomScatter(originR, originC, 0.05);
-        break;
-    case 'fractal':
-        seedRecursiveFractals(originR, originC, 3);
-        break;
-    case 'organic':
-        seedPerlinCluster(originR, originC, 0.5);
-        break;
-    case 'seeded':
-        loadPatternFromMemory(originR, originC);
-        break;
-    default:
-        console.log('Unknown genesis mode:', genesisMode);
-        break;
+    performNovaSequence();
+
+    function performNovaSequence() {
+        clearGrid(false);
+        console.log('Seeding: ' + genesisMode);
+        if (novaOverlay) {
+            const modeDisplay = genesisMode.charAt(0).toUpperCase() + genesisMode.slice(1);
+            novaOverlay.innerHTML = modeDisplay + '<br>Data Nova';
+        }
+        latestNovaCenters.forEach(([originR, originC], idx) => {
+            switch (genesisMode) {
+            case 'stable':
+                seedSymmetricalBurst(originR, originC);
+                break;
+            case 'chaotic':
+                seedRandomScatter(originR, originC, 0.05);
+                break;
+            case 'fractal':
+                seedRecursiveFractals(originR, originC, 3);
+                break;
+            case 'organic':
+                seedPerlinCluster(originR, originC, 0.5);
+                break;
+            case 'seeded':
+                loadPatternFromMemory(originR, originC);
+                break;
+            default:
+                console.log('Unknown genesis mode:', genesisMode);
+                break;
+            }
+        });
+        accumulatedEnergy = 0;
+        pulseCounter = 0;
+        prevGrid = copyGrid(grid);
+        drawGrid();
+        if (novaOverlay) {
+            novaOverlay.classList.add('show');
+            setTimeout(() => {
+                novaOverlay.classList.remove('show');
+                novaOverlay.textContent = 'Data Nova';
+            }, 1200);
+        }
+        console.log('Data Nova at', new Date().toISOString());
+        start();
     }
-
-    accumulatedEnergy = 0;
-    pulseCounter = 0;
-    prevGrid = copyGrid(grid);
-    drawGrid();
-
-    if (novaOverlay) {
-        novaOverlay.classList.add('show');
-        setTimeout(() => {
-            novaOverlay.classList.remove('show');
-            novaOverlay.textContent = 'Data Nova';
-        }, 1200);
-    }
-
-    console.log('Data Nova at', new Date().toISOString());
-    start();
 }
 
 function saveCurrentPattern() {
@@ -986,6 +1045,7 @@ function init() {
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
+    unlockGenesisPhase();
     frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';
@@ -999,6 +1059,8 @@ function init() {
     debugOverlay = debugCheckbox.checked;
     fieldTensionMode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
     genesisMode = genesisSelect ? genesisSelect.value : 'stable';
+    const selectedPhase = document.querySelector('input[name="genesisPhase"]:checked');
+    genesisPhase = selectedPhase ? selectedPhase.value : 'pre';
 }
 
 window.addEventListener('resize', () => {
@@ -1076,6 +1138,16 @@ if (fieldTensionDropdown) {
 if (genesisSelect) {
     genesisSelect.addEventListener('change', (e) => {
         genesisMode = e.target.value;
+    });
+}
+
+if (genesisPhaseRadios) {
+    genesisPhaseRadios.forEach(r => {
+        r.addEventListener('change', () => {
+            if (!r.disabled && r.checked) {
+                genesisPhase = r.value;
+            }
+        });
     });
 }
 
@@ -1161,4 +1233,4 @@ if (menuToggle && slideMenu) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, genesisMode };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase };
