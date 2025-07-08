@@ -855,7 +855,8 @@ function triggerInfoNova() {
 
     console.log('Seeding: ' + genesisMode);
     if (novaOverlay) {
-        novaOverlay.textContent = 'DATA NOVA — Seeding: ' + genesisMode;
+        const modeDisplay = genesisMode.charAt(0).toUpperCase() + genesisMode.slice(1);
+        novaOverlay.innerHTML = modeDisplay + '<br>Data Nova';
     }
 
     switch (genesisMode) {
@@ -888,7 +889,7 @@ function triggerInfoNova() {
         novaOverlay.classList.add('show');
         setTimeout(() => {
             novaOverlay.classList.remove('show');
-            novaOverlay.textContent = 'DATA NOVA';
+            novaOverlay.textContent = 'Data Nova';
         }, 1200);
     }
 
