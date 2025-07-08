@@ -784,6 +784,8 @@ function triggerInfoNova() {
         seedFractal(cr, cc + rad, Math.floor(rad / 2));
     }
 
+    console.log('Using genesis mode:', genesisMode);
+
     switch (genesisMode) {
     case 'chaotic': {
         while (placed < maxCells) {
