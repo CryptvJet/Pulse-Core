@@ -11,6 +11,16 @@
     <button id="menuToggle">Menu</button>
     <div id="slideMenu">
     <div id="controls">
+        <div id="genesisRow" class="controlRow">
+            <label for="genesisModeSelect">Genesis Mode:</label>
+            <select id="genesisModeSelect">
+                <option value="stable">Stable</option>
+                <option value="chaotic">Chaotic</option>
+                <option value="organic">Organic</option>
+                <option value="fractal">Fractal</option>
+                <option value="seeded">Seeded</option>
+            </select>
+        </div>
         <div id="controlButtons" class="controlRow">
             <button id="startBtn">Start</button>
             <button id="stopBtn" disabled>Stop</button>
@@ -33,14 +43,6 @@
             <input type="range" id="neighborSlider" min="0" max="8" step="1" value="2">
         </label>
         <label id="pulseLengthLabel">Pulse Length: <input type="number" id="pulseLength" value="3" min="1" /></label>
-        <label for="genesisModeSelect">Genesis Mode:</label>
-        <select id="genesisModeSelect">
-            <option value="stable">Stable</option>
-            <option value="chaotic">Chaotic</option>
-            <option value="organic">Organic</option>
-            <option value="fractal">Fractal</option>
-            <option value="seeded">Seeded</option>
-        </select>
         <label><input type="checkbox" id="debugOverlay"> Field Tension Mapping</label>
         <select id="fieldTensionMode" style="margin-top:4px">
             <option value="none" selected>None</option>

@@ -25,7 +25,8 @@ body {
 }
 
 #controlButtons,
-#pulseRow {
+#pulseRow,
+#genesisRow {
     display: flex;
     gap: 6px;
 }
