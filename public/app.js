@@ -594,8 +594,9 @@ function randomizeGrid() {
 
     const areaRows = Math.min(size, rows);
     const areaCols = Math.min(size, cols);
-    const startRow = Math.floor(Math.random() * Math.max(rows - areaRows + 1, 1));
-    const startCol = Math.floor(Math.random() * Math.max(cols - areaCols + 1, 1));
+    // Center the random area within the current grid
+    const startRow = Math.floor((rows - areaRows) / 2);
+    const startCol = Math.floor((cols - areaCols) / 2);
 
     const total = areaRows * areaCols;
     const maxFill = Math.floor(total * fillRatio);
