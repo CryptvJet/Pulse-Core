@@ -875,7 +875,7 @@ function triggerInfoNova() {
         setTimeout(() => novaOverlay.classList.remove('show'), 1200);
     }
 
-    console.log('Info Nova at', new Date().toISOString());
+    console.log('Data Nova at', new Date().toISOString());
     start();
 }
 
