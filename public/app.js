@@ -925,6 +925,40 @@ function triggerInfoNova() {
         return;
     }
 
+    if (genesisPhase === 'post' && latestNovaCenters.length > 1) {
+        selectionPending = true;
+        stop();
+        drawGrid();
+        if (novaOverlay) {
+            novaOverlay.textContent = 'Choose Nova';
+            novaOverlay.classList.add('show');
+        }
+        const handler = (e) => {
+            if (!selectionPending) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - offsetX;
+            const y = e.clientY - rect.top - offsetY;
+            const r = Math.floor(y / cellSize);
+            const c = Math.floor(x / cellSize);
+            let chosen = null;
+            let best = Infinity;
+            latestNovaCenters.forEach(pt => {
+                const d = Math.hypot(pt[0] - r, pt[1] - c);
+                if (d < best) { best = d; chosen = pt; }
+            });
+            if (chosen) {
+                selectionPending = false;
+                canvas.removeEventListener('click', handler);
+                latestNovaCenters = [chosen];
+                latestNovaCenter = chosen;
+                novaOverlay.classList.remove('show');
+                performNovaSequence();
+            }
+        };
+        canvas.addEventListener('click', handler);
+        return;
+    }
+
     performNovaSequence();
 
     function performNovaSequence() {
