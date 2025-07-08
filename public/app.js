@@ -82,6 +82,7 @@ let lastFrameTime = performance.now();
 let prevGrid = [];
 let accumulatedEnergy = 0;
 let latestNovaCenter = null;
+let genesisMode = 'stable'; // stable | chaotic | organic | fractal | seeded
 
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
@@ -757,37 +758,111 @@ function triggerInfoNova() {
     const maxRadius = Math.sqrt(maxCells / Math.PI);
     radius = Math.min(radius, maxRadius);
 
-    // Simple deterministic PRNG (linear congruential)
-    let seed = pulseLength * 31 + neighborThreshold * 17 + foldThreshold * 13;
-    function rand() {
-        seed = (seed * 1664525 + 1013904223) % 4294967296;
-        return seed / 4294967296;
-    }
+    let placed = 0;
 
-    let activated = 0;
-    const sigma = radius / 2;
-    for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
-        for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
-            if (activated >= maxCells) break;
-            const dist = Math.sqrt(dr * dr + dc * dc);
-            if (dist <= radius) {
-                const baseProb = Math.exp(-(dist * dist) / (2 * sigma * sigma));
-                const r = originR + dr;
-                const c = originC + dc;
-                let weight = 1;
-                if (prevGrid && prevGrid[r] && prevGrid[r][c] === 1) {
-                    weight += 0.5;
-                }
-                const probability = Math.min(1, baseProb * weight);
-                if (rand() < probability) {
+    function seedFractal(cr, cc, rad) {
+        if (placed >= maxCells || rad < 1) return;
+        for (let dr = -rad; dr <= rad; dr++) {
+            for (let dc = -rad; dc <= rad; dc++) {
+                const dist = Math.sqrt(dr * dr + dc * dc);
+                if (dist <= rad) {
+                    const r = cr + dr;
+                    const c = cc + dc;
                     if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                        if (!grid[r][c]) placed++;
                         grid[r][c] = 1;
                         colorGrid[r][c] = currentColor;
-                        activated++;
+                        if (placed >= maxCells) return;
                     }
                 }
             }
         }
+        seedFractal(cr - rad, cc, Math.floor(rad / 2));
+        seedFractal(cr + rad, cc, Math.floor(rad / 2));
+        seedFractal(cr, cc - rad, Math.floor(rad / 2));
+        seedFractal(cr, cc + rad, Math.floor(rad / 2));
+    }
+
+    switch (genesisMode) {
+    case 'chaotic': {
+        while (placed < maxCells) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            const dr = Math.round(Math.cos(angle) * dist);
+            const dc = Math.round(Math.sin(angle) * dist);
+            const r = originR + dr;
+            const c = originC + dc;
+            if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                if (!grid[r][c]) placed++;
+                grid[r][c] = 1;
+                colorGrid[r][c] = currentColor;
+            }
+        }
+        break;
+    }
+    case 'organic': {
+        for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
+            for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
+                const dist = Math.sqrt(dr * dr + dc * dc);
+                if (dist <= radius) {
+                    const noise = (Math.sin(dr * 0.5) * Math.cos(dc * 0.5) + 1) / 2;
+                    if (Math.random() < noise && placed < maxCells) {
+                        const r = originR + dr;
+                        const c = originC + dc;
+                        if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                            if (!grid[r][c]) placed++;
+                            grid[r][c] = 1;
+                            colorGrid[r][c] = currentColor;
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    }
+    case 'fractal': {
+        seedFractal(originR, originC, Math.floor(radius));
+        break;
+    }
+    case 'seeded': {
+        const pattern = [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 1, 0]
+        ];
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 3; c++) {
+                if (pattern[r][c] === 1) {
+                    const nr = originR + r - 1;
+                    const nc = originC + c - 1;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        grid[nr][nc] = 1;
+                        colorGrid[nr][nc] = currentColor;
+                        placed++;
+                        if (placed >= maxCells) break;
+                    }
+                }
+            }
+        }
+        break;
+    }
+    case 'stable':
+    default: {
+        for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
+            for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
+                const dist = Math.sqrt(dr * dr + dc * dc);
+                if (dist <= radius && placed < maxCells) {
+                    const r = originR + dr;
+                    const c = originC + dc;
+                    if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                        if (!grid[r][c]) placed++;
+                        grid[r][c] = 1;
+                        colorGrid[r][c] = currentColor;
+                    }
+                }
+            }
+        }
+    }
     }
 
     accumulatedEnergy = 0;
@@ -1029,4 +1104,4 @@ if (menuToggle && slideMenu) {
 init();
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { triggerInfoNova, latestNovaCenter };
+export { triggerInfoNova, latestNovaCenter, genesisMode };

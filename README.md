@@ -16,6 +16,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Center View option** – Keep the field centered while zooming or resizing.
 - **Info Nova** – If accumulated energy exceeds the collapse threshold, the grid
   clears, explodes from the center and the simulation restarts.
+- **Genesis Mode** – Choose how Info Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
 
 The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
 Adjusting the zoom slider now scales the existing grid so it always fills the window.
