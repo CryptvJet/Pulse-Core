@@ -170,3 +170,12 @@ body {
     font-size: 18px;
     cursor: pointer;
 }
+
+canvas.flash {
+    animation: flash-bg 0.1s ease-out;
+}
+
+@keyframes flash-bg {
+    from { background: #fff; }
+    to { background: inherit; }
+}
