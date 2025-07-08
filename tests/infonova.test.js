@@ -35,3 +35,10 @@ test('triggerInfoNova picks origin in densest cluster', () => {
     expect(latestNovaCenter[1]).toBeGreaterThan(4);
 });
 
+test('triggerInfoNova uses single active cell as center', () => {
+    global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    prevGrid[3][4] = 1;
+    triggerInfoNova();
+    expect(latestNovaCenter).toEqual([3, 4]);
+});
+
