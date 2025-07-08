@@ -197,6 +197,11 @@ canvas.flash {
     animation: nova-fade 1.5s ease-out forwards;
 }
 
+#novaOverlay.prompt {
+    opacity: 1;
+    animation: none;
+}
+
 @keyframes nova-fade {
     from { opacity: 1; }
     to { opacity: 0; }

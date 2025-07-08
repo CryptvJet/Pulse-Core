@@ -897,9 +897,10 @@ function triggerInfoNova() {
         selectionPending = true;
         stop();
         drawGrid();
+        showNovaInfo(latestNovaCenters[0]);
         if (novaOverlay) {
             novaOverlay.textContent = 'Choose Timeline';
-            novaOverlay.classList.add('show');
+            novaOverlay.classList.add('prompt', 'show');
         }
         const handler = (e) => {
             if (!selectionPending) return;
@@ -919,7 +920,9 @@ function triggerInfoNova() {
                 canvas.removeEventListener('click', handler);
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
-                novaOverlay.classList.remove('show');
+                novaOverlay.classList.remove('prompt', 'show');
+                const info = document.getElementById('novaInfoBox');
+                if (info) info.classList.remove('show');
                 performNovaSequence();
             }
         };
@@ -931,9 +934,10 @@ function triggerInfoNova() {
         selectionPending = true;
         stop();
         drawGrid();
+        showNovaInfo(latestNovaCenters[0]);
         if (novaOverlay) {
             novaOverlay.textContent = 'Choose Nova';
-            novaOverlay.classList.add('show');
+            novaOverlay.classList.add('prompt', 'show');
         }
         const handler = (e) => {
             if (!selectionPending) return;
@@ -953,7 +957,9 @@ function triggerInfoNova() {
                 canvas.removeEventListener('click', handler);
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
-                novaOverlay.classList.remove('show');
+                novaOverlay.classList.remove('prompt', 'show');
+                const info = document.getElementById('novaInfoBox');
+                if (info) info.classList.remove('show');
                 performNovaSequence();
             }
         };
