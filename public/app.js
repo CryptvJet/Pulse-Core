@@ -721,8 +721,13 @@ function triggerInfoNova() {
     clearGrid(false);
 
     const foldThreshold = parseInt(foldSlider.value);
-    const base = totalActive + maxLocal + pulseLength + neighborThreshold + foldThreshold;
-    const radius = Math.max(2, Math.floor(Math.sqrt(base / 2)));
+    const normalizationFactor = 30;
+    let radius = Math.sqrt(accumulatedEnergy) / normalizationFactor;
+    radius = Math.max(2, radius);
+
+    const maxCells = Math.floor(rows * cols * 0.15);
+    const maxRadius = Math.sqrt(maxCells / Math.PI);
+    radius = Math.min(radius, maxRadius);
 
     // Simple deterministic PRNG (linear congruential)
     let seed = pulseLength * 31 + neighborThreshold * 17 + foldThreshold * 13;
@@ -731,15 +736,22 @@ function triggerInfoNova() {
         return seed / 4294967296;
     }
 
-    for (let dr = -radius; dr <= radius; dr++) {
-        for (let dc = -radius; dc <= radius; dc++) {
+    let activated = 0;
+    const sigma = radius / 2;
+    for (let dr = -Math.ceil(radius); dr <= Math.ceil(radius); dr++) {
+        for (let dc = -Math.ceil(radius); dc <= Math.ceil(radius); dc++) {
+            if (activated >= maxCells) break;
             const dist = Math.sqrt(dr * dr + dc * dc);
-            if (dist + rand() * 0.5 <= radius) {
-                const r = originR + dr;
-                const c = originC + dc;
-                if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    grid[r][c] = 1;
-                    colorGrid[r][c] = currentColor;
+            if (dist <= radius) {
+                const probability = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+                if (rand() < probability) {
+                    const r = originR + dr;
+                    const c = originC + dc;
+                    if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                        grid[r][c] = 1;
+                        colorGrid[r][c] = currentColor;
+                        activated++;
+                    }
                 }
             }
         }
