@@ -24,6 +24,7 @@ const pulseLengthLabel = document.getElementById('pulseLengthLabel');
 const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
+const stateLabel = document.getElementById('stateLabel');
 const tensionValueSpan = document.getElementById('tensionValue');
 const frameDurationSpan = document.getElementById('frameDuration');
 const frameComplexitySpan = document.getElementById('frameComplexity');
@@ -82,6 +83,8 @@ let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
 let pulseFlash = true;
 let lastFrameTime = performance.now();
+let startTime = null;
+let timeElapsed = 0;
 let prevGrid = [];
 let accumulatedEnergy = 0;
 let latestNovaCenter = null;
@@ -340,6 +343,22 @@ function drawDualReactorChamber() {
 
 function update() {
     const now = performance.now();
+    if (pulseCounter === 0) {
+        startTime = now;
+        lastFrameTime = now;
+        accumulatedEnergy = 0;
+        timeElapsed = 0;
+        pulseCounter = 1;
+        pulseCounterSpan.textContent = pulseCounter;
+        stateLabel.textContent = `State: Pulsing (Frame ${pulseCounter})`;
+        stateLabel.classList.add('pulse-start');
+        setTimeout(() => stateLabel.classList.remove('pulse-start'), 300);
+        frameDurationSpan.textContent = '0';
+        frameComplexitySpan.textContent = '0';
+        pulseEnergySpan.textContent = '0';
+        drawGrid();
+        return;
+    }
     const frameDuration = now - lastFrameTime;
     lastFrameTime = now;
     const foldThreshold = parseInt(foldSlider.value);
@@ -413,11 +432,13 @@ function update() {
     }
     drawGrid();
     pulseCounterSpan.textContent = pulseCounter;
+    stateLabel.textContent = `State: Pulsing (Frame ${pulseCounter})`;
     activeCellCount = countActiveCells(grid);
     tensionValueSpan.textContent = activeCellCount;
     const complexity = countCellChanges(prevGrid, grid);
     const energyThisFrame = complexity * (frameDuration / 16);
     accumulatedEnergy += energyThisFrame;
+    timeElapsed = now - startTime;
     frameDurationSpan.textContent = Math.round(frameDuration);
     frameComplexitySpan.textContent = complexity;
     pulseEnergySpan.textContent = Math.round(accumulatedEnergy);
@@ -521,6 +542,7 @@ function applyPatternData(data) {
 
     pulseCounter = data.pulse || 0;
     pulseCounterSpan.textContent = pulseCounter;
+    stateLabel.textContent = pulseCounter === 0 ? 'State: Pre-Pulse' : `State: Pulsing (Frame ${pulseCounter})`;
     drawGrid();
 }
 
@@ -614,6 +636,7 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
+    stateLabel.classList.remove('pulse-start');
     pulseLength = parseInt(pulseLengthInput.value);
     pulseLengthInput.disabled = true;
     lastFrameTime = performance.now();
@@ -641,7 +664,10 @@ function clearGrid(resetStats = true) {
     history = [];
     pulseCounter = 0;
     accumulatedEnergy = 0;
+    startTime = null;
+    timeElapsed = 0;
     prevGrid = copyGrid(grid);
+    stateLabel.textContent = 'State: Pre-Pulse';
     if (resetStats) {
         pulseCounterSpan.textContent = pulseCounter;
         frameDurationSpan.textContent = '0';
@@ -656,6 +682,11 @@ function randomizeGrid() {
     createGrid();
     prevGrid = copyGrid(grid);
     accumulatedEnergy = 0;
+    startTime = null;
+    timeElapsed = 0;
+    pulseCounter = 0;
+    pulseCounterSpan.textContent = pulseCounter;
+    stateLabel.textContent = 'State: Pre-Pulse';
     frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';
@@ -905,6 +936,8 @@ function saveCurrentPattern() {
     const data = {
         name,
         pulse: pulseCounter || 0,
+        phase: pulseCounter === 0 ? 'Seed Substrate' : 'Live Evolution',
+        elapsedMs: pulseCounter === 0 || startTime === null ? 0 : Math.round(performance.now() - startTime),
         position: [centerR, centerC],
         rows,
         cols,
@@ -941,6 +974,7 @@ function init() {
     pulseEnergySpan.textContent = '0';
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
+    stateLabel.textContent = 'State: Pre-Pulse';
     reverseBtn.textContent = 'Reverse';
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;

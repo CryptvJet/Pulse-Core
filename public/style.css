@@ -206,3 +206,16 @@ canvas.flash {
     font-weight: bold;
     margin-left: 4px;
 }
+
+#stateLabel {
+    margin-left: 8px;
+}
+
+#stateLabel.pulse-start {
+    animation: pulse-glow 0.3s ease-out;
+}
+
+@keyframes pulse-glow {
+    from { box-shadow: 0 0 6px #fff; }
+    to { box-shadow: none; }
+}
