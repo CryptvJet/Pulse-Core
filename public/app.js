@@ -44,6 +44,7 @@ const directionsLink = document.getElementById('directionsLink');
 const aboutPopup = document.getElementById('aboutPopup');
 const directionsPopup = document.getElementById('directionsPopup');
 const closeButtons = document.querySelectorAll('.closePopup');
+const novaOverlay = document.getElementById('novaOverlay');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -685,28 +686,40 @@ function triggerBigBang() {
 }
 
 function triggerInfoNova() {
-    const centerX = Math.floor(grid.length / 2);
-    const centerY = Math.floor(grid[0].length / 2);
+    const centerX = Math.floor(rows / 2);
+    const centerY = Math.floor(cols / 2);
 
     clearGrid(false);
 
-    grid[centerX][centerY] = 1;
+    const foldThreshold = parseInt(foldSlider.value);
+    const radius = Math.max(2, pulseLength) + neighborThreshold + foldThreshold;
 
-    const flicker = pulseCounter % 2;
-    for (let radius = 1; radius <= pulseLength; radius++) {
-        for (let angle = 0; angle < 360; angle += 45) {
-            const x = Math.floor(centerX + radius * Math.cos(angle * Math.PI / 180));
-            const y = Math.floor(centerY + radius * Math.sin(angle * Math.PI / 180));
-            if (grid[x] && grid[x][y] !== undefined) {
-                grid[x][y] = flicker;
+    for (let dr = -radius; dr <= radius; dr++) {
+        for (let dc = -radius; dc <= radius; dc++) {
+            const dist = Math.sqrt(dr * dr + dc * dc);
+            if (dist <= radius) {
+                const r = centerX + dr;
+                const c = centerY + dc;
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    grid[r][c] = 1;
+                    colorGrid[r][c] = currentColor;
+                }
             }
         }
     }
 
     accumulatedEnergy = 0;
     pulseCounter = 0;
+    prevGrid = copyGrid(grid);
+    drawGrid();
+
+    if (novaOverlay) {
+        novaOverlay.classList.add('show');
+        setTimeout(() => novaOverlay.classList.remove('show'), 1200);
+    }
 
     console.log('Info Nova at', new Date().toISOString());
+    start();
 }
 
 function saveCurrentPattern() {
@@ -933,3 +946,5 @@ if (menuToggle && slideMenu) {
 
 init();
 // Additional hooks for pulse direction and substrate density will be added later.
+
+export { triggerInfoNova };

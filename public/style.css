@@ -179,3 +179,23 @@ canvas.flash {
     from { background: #fff; }
     to { background: inherit; }
 }
+
+#novaOverlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #fff;
+    pointer-events: none;
+    opacity: 0;
+}
+
+#novaOverlay.show {
+    animation: nova-fade 1.5s ease-out forwards;
+}
+
+@keyframes nova-fade {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
