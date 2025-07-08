@@ -14,6 +14,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Optional overlays** – Toggle pulse flash, field tension mapping and grid lines.
 
 The grid automatically resizes with your browser window but will not exceed 500×500 cells for performance reasons.
+Adjusting the zoom slider recreates the grid so it always fills the window.
 
 ## Running the Simulation
 
