@@ -25,6 +25,6 @@ beforeEach(() => {
 test('triggerInfoNova resets counter and uses densest region as origin', () => {
     triggerInfoNova();
     expect(pulseCounter).toBe(0);
-    expect(grid[1][1]).toBe(1);
+    expect(grid[2][2]).toBe(1);
 });
 

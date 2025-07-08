@@ -686,34 +686,29 @@ function triggerBigBang() {
 }
 
 function triggerInfoNova() {
-    // Analyze the previous grid to find the densest active region
-    const scanRadius = 1;
+    // Analyze the previous grid to find the densest N×N region
+    const scanSize = Math.min(10, rows, cols);
+    const half = Math.floor(scanSize / 2);
     let originR = Math.floor(rows / 2);
     let originC = Math.floor(cols / 2);
-    let totalActive = 0;
-    let maxLocal = -1;
+    let maxActive = -1;
 
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (prevGrid && prevGrid[r] && prevGrid[r][c] === 1) {
-                totalActive++;
-            }
-            let local = 0;
-            for (let dr = -scanRadius; dr <= scanRadius; dr++) {
-                for (let dc = -scanRadius; dc <= scanRadius; dc++) {
-                    const nr = r + dr;
-                    const nc = c + dc;
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                        if (prevGrid && prevGrid[nr] && prevGrid[nr][nc] === 1) {
-                            local++;
+    if (prevGrid && prevGrid.length) {
+        for (let r = 0; r <= rows - scanSize; r++) {
+            for (let c = 0; c <= cols - scanSize; c++) {
+                let sum = 0;
+                for (let dr = 0; dr < scanSize; dr++) {
+                    for (let dc = 0; dc < scanSize; dc++) {
+                        if (prevGrid[r + dr][c + dc] === 1) {
+                            sum++;
                         }
                     }
                 }
-            }
-            if (local > maxLocal) {
-                maxLocal = local;
-                originR = r;
-                originC = c;
+                if (sum > maxActive) {
+                    maxActive = sum;
+                    originR = r + half;
+                    originC = c + half;
+                }
             }
         }
     }
@@ -743,10 +738,15 @@ function triggerInfoNova() {
             if (activated >= maxCells) break;
             const dist = Math.sqrt(dr * dr + dc * dc);
             if (dist <= radius) {
-                const probability = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+                const baseProb = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+                const r = originR + dr;
+                const c = originC + dc;
+                let weight = 1;
+                if (prevGrid && prevGrid[r] && prevGrid[r][c] === 1) {
+                    weight += 0.5;
+                }
+                const probability = Math.min(1, baseProb * weight);
                 if (rand() < probability) {
-                    const r = originR + dr;
-                    const c = originC + dc;
                     if (r >= 0 && r < rows && c >= 0 && c < cols) {
                         grid[r][c] = 1;
                         colorGrid[r][c] = currentColor;
