@@ -55,7 +55,19 @@ npm run lint
 npm test
 ```
 
-Run `npm install` once before running the tests to ensure Jest is available.
+### Test Setup
+
+Install dependencies before running the unit tests:
+
+```sh
+npm install
+```
+
+Once the packages are installed you can execute the test suite with:
+
+```sh
+npm test
+```
 
 `npm test` currently outputs a placeholder message but establishes a spot for future tests.
 

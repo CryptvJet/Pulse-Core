@@ -822,7 +822,7 @@ function triggerInfoNova() {
 
     console.log('Seeding: ' + genesisMode);
     if (novaOverlay) {
-        novaOverlay.textContent = 'Seeding: ' + genesisMode;
+        novaOverlay.textContent = 'DATA NOVA — Seeding: ' + genesisMode;
     }
 
     switch (genesisMode) {
