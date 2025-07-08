@@ -10,6 +10,7 @@ beforeEach(() => {
     global.pulseLength = 2;
     global.foldSlider = { value: '0' };
     global.currentColor = '#00ff00';
+    global.genesisMode = 'stable';
     global.clearGrid = () => {};
     global.copyGrid = (src) => src.map(r => r.slice());
     global.drawGrid = () => {};
