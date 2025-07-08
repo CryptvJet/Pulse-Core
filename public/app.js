@@ -350,7 +350,7 @@ function update() {
         timeElapsed = 0;
         pulseCounter = 1;
         pulseCounterSpan.textContent = pulseCounter;
-        stateLabel.textContent = `State: Pulsing (Frame ${pulseCounter})`;
+        stateLabel.textContent = 'State: Pulsing';
         stateLabel.classList.add('pulse-start');
         setTimeout(() => stateLabel.classList.remove('pulse-start'), 300);
         frameDurationSpan.textContent = '0';
@@ -432,7 +432,7 @@ function update() {
     }
     drawGrid();
     pulseCounterSpan.textContent = pulseCounter;
-    stateLabel.textContent = `State: Pulsing (Frame ${pulseCounter})`;
+    stateLabel.textContent = 'State: Pulsing';
     activeCellCount = countActiveCells(grid);
     tensionValueSpan.textContent = activeCellCount;
     const complexity = countCellChanges(prevGrid, grid);
@@ -542,7 +542,7 @@ function applyPatternData(data) {
 
     pulseCounter = data.pulse || 0;
     pulseCounterSpan.textContent = pulseCounter;
-    stateLabel.textContent = pulseCounter === 0 ? 'State: Pre-Pulse' : `State: Pulsing (Frame ${pulseCounter})`;
+    stateLabel.textContent = pulseCounter === 0 ? 'State: Pre-Pulse' : 'State: Pulsing';
     drawGrid();
 }
 
