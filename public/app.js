@@ -65,14 +65,10 @@ const MAX_DIMENSION = 500;
 let pulseFlash = true;
 
 function updateZoom() {
+    // Update the pixel size for each cell based on the zoom slider
+    // and refresh the grid dimensions so the canvas remains filled.
     cellSize = parseInt(zoomSlider.value);
-    if (centerView) {
-        offsetX = Math.floor((canvas.width - cols * cellSize) / 2);
-        offsetY = Math.floor((canvas.height - rows * cellSize) / 2);
-    } else {
-        offsetX = 0;
-        offsetY = 0;
-    }
+    updateDimensions();
 }
 
 function updateDimensions() {
