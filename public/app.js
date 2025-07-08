@@ -587,26 +587,10 @@ function clearGrid() {
 
 function randomizeGrid() {
     stop();
-    rows = 4;
-    cols = 5;
-    cellSize = 20;
-    zoomSlider.value = cellSize;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    offsetX = Math.floor((canvas.width - cols * cellSize) / 2);
-    offsetY = Math.floor((canvas.height - rows * cellSize) / 2);
     createGrid();
-    const maxFill = Math.floor(rows * cols * 0.8);
-    const fillProb = Math.random() * 0.8;
-    let filled = 0;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (filled < maxFill && Math.random() < fillProb) {
-                grid[r][c] = 1;
-                filled++;
-            } else {
-                grid[r][c] = 0;
-            }
+            grid[r][c] = Math.random() < 0.5 ? 1 : 0;
         }
     }
     drawGrid();
