@@ -1,5 +1,5 @@
 let triggerInfoNova;
-let latestNovaCenter;
+let latestNovaCenters;
 
 // Mock minimal globals used by triggerInfoNova
 beforeEach(async () => {
@@ -14,7 +14,7 @@ beforeEach(async () => {
     `;
     const mod = await import('../public/app.js');
     triggerInfoNova = mod.triggerInfoNova;
-    latestNovaCenter = mod.latestNovaCenter;
+    latestNovaCenters = mod.latestNovaCenters;
     global.rows = 8;
     global.cols = 8;
     global.grid = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -45,15 +45,15 @@ beforeEach(async () => {
 test('triggerInfoNova picks origin in densest cluster', () => {
     triggerInfoNova();
     expect(pulseCounter).toBe(0);
-    expect(latestNovaCenter[0]).toBeGreaterThan(4);
-    expect(latestNovaCenter[1]).toBeGreaterThan(4);
+    expect(latestNovaCenters[0][0]).toBeGreaterThan(4);
+    expect(latestNovaCenters[0][1]).toBeGreaterThan(4);
 });
 
 test('triggerInfoNova uses single active cell as center', () => {
     global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
     prevGrid[3][4] = 1;
     triggerInfoNova();
-    expect(latestNovaCenter).toEqual([3, 4]);
+    expect(latestNovaCenters[0]).toEqual([3, 4]);
 });
 
 test('triggerInfoNova averages position when density is tied', () => {
@@ -61,6 +61,15 @@ test('triggerInfoNova averages position when density is tied', () => {
     prevGrid[0][0] = 1;
     prevGrid[7][7] = 1;
     triggerInfoNova();
-    expect(latestNovaCenter).toEqual([3, 3]);
+    expect(latestNovaCenters[0]).toEqual([3, 3]);
+});
+
+test('triggerInfoNova detects multiple isolated clusters', () => {
+    global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    prevGrid[0][0] = 1;
+    prevGrid[7][7] = 1;
+    prevGrid[0][7] = 1;
+    triggerInfoNova();
+    expect(latestNovaCenters.length).toBeGreaterThan(1);
 });
 
