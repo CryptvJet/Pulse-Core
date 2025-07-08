@@ -68,7 +68,7 @@ let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let fieldTensionMode = 'none';
 let activeCellCount = 0;
-let collapseThreshold = parseFloat(collapseThresholdInput.value || '1.5') * PULSE_UNIT;
+let collapseThreshold = parseFloat(collapseThresholdInput.value || '1') * 1000 * PULSE_UNIT;
 let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
@@ -828,7 +828,7 @@ pulseLengthInput.addEventListener('input', () => {
 });
 
 collapseThresholdInput.addEventListener('input', () => {
-    collapseThreshold = parseFloat(collapseThresholdInput.value || '1.5') * PULSE_UNIT;
+    collapseThreshold = parseFloat(collapseThresholdInput.value || '1') * 1000 * PULSE_UNIT;
 });
 
 frameRateSlider.addEventListener('input', () => {
