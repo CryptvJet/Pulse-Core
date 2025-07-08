@@ -81,6 +81,7 @@ let pulseFlash = true;
 let lastFrameTime = performance.now();
 let prevGrid = [];
 let accumulatedEnergy = 0;
+let latestNovaCenter = null;
 
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
@@ -239,6 +240,16 @@ function drawGrid() {
             clearFieldOverlay();
         } else {
             drawFieldTensionOverlay(mode);
+        }
+        if (latestNovaCenter) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            const [nr, nc] = latestNovaCenter;
+            const x = nc * cellSize + offsetX + cellSize / 2;
+            const y = nr * cellSize + offsetY + cellSize / 2;
+            ctx.beginPath();
+            ctx.arc(x, y, cellSize * 1.5, 0, Math.PI * 2);
+            ctx.stroke();
         }
     }
 }
@@ -686,32 +697,41 @@ function triggerBigBang() {
 }
 
 function triggerInfoNova() {
-    // Analyze the previous grid to find the densest N×N region
-    const scanSize = Math.min(10, rows, cols);
-    const half = Math.floor(scanSize / 2);
+    const searchRadius = Math.max(2, Math.min(5, Math.floor(Math.min(rows, cols) / 4)));
     let originR = Math.floor(rows / 2);
     let originC = Math.floor(cols / 2);
-    let maxActive = -1;
+    let maxScore = -1;
+    let candidates = [];
 
     if (prevGrid && prevGrid.length) {
-        for (let r = 0; r <= rows - scanSize; r++) {
-            for (let c = 0; c <= cols - scanSize; c++) {
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
                 let sum = 0;
-                for (let dr = 0; dr < scanSize; dr++) {
-                    for (let dc = 0; dc < scanSize; dc++) {
-                        if (prevGrid[r + dr][c + dc] === 1) {
-                            sum++;
+                for (let dr = -searchRadius; dr <= searchRadius; dr++) {
+                    for (let dc = -searchRadius; dc <= searchRadius; dc++) {
+                        const nr = r + dr;
+                        const nc = c + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                            if (prevGrid[nr][nc] === 1) sum++;
                         }
                     }
                 }
-                if (sum > maxActive) {
-                    maxActive = sum;
-                    originR = r + half;
-                    originC = c + half;
+                if (sum > maxScore) {
+                    maxScore = sum;
+                    candidates = [[r, c]];
+                } else if (sum === maxScore) {
+                    candidates.push([r, c]);
                 }
             }
         }
     }
+
+    if (candidates.length > 0) {
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        originR = pick[0];
+        originC = pick[1];
+    }
+    latestNovaCenter = [originR, originC];
 
     clearGrid(false);
 
@@ -996,4 +1016,4 @@ if (menuToggle && slideMenu) {
 init();
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { triggerInfoNova };
+export { triggerInfoNova, latestNovaCenter };
