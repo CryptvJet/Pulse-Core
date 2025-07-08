@@ -703,7 +703,6 @@ function triggerInfoNova() {
     let originR = Math.floor(rows / 2);
     let originC = Math.floor(cols / 2);
     let maxScore = -1;
-    let candidates = [];
     let activeCells = [];
 
     if (prevGrid && prevGrid.length) {
@@ -733,20 +732,16 @@ function triggerInfoNova() {
                 }
                 if (sum > maxScore) {
                     maxScore = sum;
-                    candidates = [[r, c]];
-                } else if (sum === maxScore) {
-                    candidates.push([r, c]);
+                    originR = r;
+                    originC = c;
                 }
             }
         }
     }
 
-    if (candidates.length > 0) {
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
-        originR = pick[0];
-        originC = pick[1];
-    }
     latestNovaCenter = [originR, originC];
+
+    console.log("Data Nova Origin:", originR, originC);
 
     clearGrid(false);
 
