@@ -202,6 +202,21 @@ canvas.flash {
     to { opacity: 0; }
 }
 
+#novaInfoBox {
+    position: absolute;
+    background: rgba(34, 34, 34, 0.95);
+    padding: 10px;
+    border-radius: 4px;
+    color: #eee;
+    z-index: 40;
+    display: none;
+    transform: translate(-50%, -50%);
+}
+
+#novaInfoBox.show {
+    display: block;
+}
+
 #resolutionWarning {
     color: #f88;
     font-weight: bold;

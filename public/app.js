@@ -40,7 +40,7 @@ const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
 const genesisSelect = document.getElementById('genesisModeSelect');
-const genesisPhaseRadios = document.querySelectorAll('input[name="genesisPhase"]');
+const postPhaseToggle = document.getElementById('postPhaseToggle');
 const centerViewToggle = document.getElementById('centerViewToggle');
 const resolutionSlider = document.getElementById('resolutionSlider');
 const resolutionWarning = document.getElementById('resolutionWarning');
@@ -95,11 +95,11 @@ let genesisPhase = 'pre'; // pre | post
 let selectionPending = false;
 
 function lockGenesisPhase() {
-    genesisPhaseRadios.forEach(r => { r.disabled = true; });
+    if (postPhaseToggle) postPhaseToggle.disabled = true;
 }
 
 function unlockGenesisPhase() {
-    genesisPhaseRadios.forEach(r => { r.disabled = false; });
+    if (postPhaseToggle) postPhaseToggle.disabled = false;
 }
 
 function updateZoom() {
@@ -960,6 +960,9 @@ function triggerInfoNova() {
         pulseCounter = 0;
         prevGrid = copyGrid(grid);
         drawGrid();
+        if (genesisPhase === 'post') {
+            showNovaInfo(latestNovaCenter);
+        }
         if (novaOverlay) {
             novaOverlay.classList.add('show');
             setTimeout(() => {
@@ -1059,8 +1062,7 @@ function init() {
     debugOverlay = debugCheckbox.checked;
     fieldTensionMode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
     genesisMode = genesisSelect ? genesisSelect.value : 'stable';
-    const selectedPhase = document.querySelector('input[name="genesisPhase"]:checked');
-    genesisPhase = selectedPhase ? selectedPhase.value : 'pre';
+    genesisPhase = postPhaseToggle && postPhaseToggle.checked ? 'post' : 'pre';
 }
 
 window.addEventListener('resize', () => {
@@ -1141,13 +1143,11 @@ if (genesisSelect) {
     });
 }
 
-if (genesisPhaseRadios) {
-    genesisPhaseRadios.forEach(r => {
-        r.addEventListener('change', () => {
-            if (!r.disabled && r.checked) {
-                genesisPhase = r.value;
-            }
-        });
+if (postPhaseToggle) {
+    postPhaseToggle.addEventListener('change', () => {
+        if (!postPhaseToggle.disabled) {
+            genesisPhase = postPhaseToggle.checked ? 'post' : 'pre';
+        }
     });
 }
 
@@ -1201,6 +1201,31 @@ function closePopup(el) {
     }
 }
 
+function centerOnNova([r, c]) {
+    offsetX = Math.floor(canvas.width / 2 - (c + 0.5) * cellSize);
+    offsetY = Math.floor(canvas.height / 2 - (r + 0.5) * cellSize);
+    drawGrid();
+}
+
+function showNovaInfo(center) {
+    const box = document.getElementById('novaInfoBox');
+    if (!box || !center) return;
+    const [r, c] = center;
+    const x = c * cellSize + offsetX + cellSize / 2;
+    const y = r * cellSize + offsetY + cellSize / 2;
+    box.style.left = `${x}px`;
+    box.style.top = `${y}px`;
+    box.innerHTML = `<div>Nova (${r}, ${c})</div><button id="focusNovaBtn">Center</button>`;
+    box.classList.add('show');
+    const btn = document.getElementById('focusNovaBtn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            centerOnNova(center);
+            box.classList.remove('show');
+        }, { once: true });
+    }
+}
+
 if (aboutLink && aboutPopup) {
     aboutLink.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1233,4 +1258,4 @@ if (menuToggle && slideMenu) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova };
