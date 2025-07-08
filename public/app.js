@@ -1,5 +1,8 @@
 import { getNeighborsSum, updateCellState } from './logic.js';
 import { countActiveCells } from './tension.js';
+
+// Base multiplier for translating user input into collapse energy units
+const PULSE_UNIT = 2000; // adjust empirically if needed
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -25,7 +28,7 @@ const tensionValueSpan = document.getElementById('tensionValue');
 const frameDurationSpan = document.getElementById('frameDuration');
 const frameComplexitySpan = document.getElementById('frameComplexity');
 const pulseEnergySpan = document.getElementById('pulseEnergy');
-const thresholdInput = document.getElementById('thresholdInput');
+const collapseThresholdInput = document.getElementById('collapseThreshold');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
@@ -65,7 +68,7 @@ let neighborThreshold = parseInt(neighborSlider.value);
 let debugOverlay = false;
 let fieldTensionMode = 'none';
 let activeCellCount = 0;
-let collapseThreshold = parseFloat(thresholdInput.value || '1.5') * 10000;
+let collapseThreshold = parseFloat(collapseThresholdInput.value || '1.5') * PULSE_UNIT;
 let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
@@ -799,8 +802,8 @@ pulseLengthInput.addEventListener('input', () => {
     }
 });
 
-thresholdInput.addEventListener('input', () => {
-    collapseThreshold = parseFloat(thresholdInput.value || '1.5') * 10000;
+collapseThresholdInput.addEventListener('input', () => {
+    collapseThreshold = parseFloat(collapseThresholdInput.value || '1.5') * PULSE_UNIT;
 });
 
 frameRateSlider.addEventListener('input', () => {
