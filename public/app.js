@@ -824,23 +824,25 @@ function triggerBigBang(tension) {
 
     const centerR = Math.floor(rows / 2);
     const centerC = Math.floor(cols / 2);
-    const radius = Math.max(1, Math.ceil(Math.sqrt(novaSize)));
+    const radius = Math.max(1, Math.floor(novaSize / 3));
 
     function randomColor() {
         return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
     }
 
     for (let i = 0; i < novaSize; i++) {
-        const dx = Math.floor((Math.random() * 2 - 1) * radius);
-        const dy = Math.floor((Math.random() * 2 - 1) * radius);
-        let r = centerR + dy;
-        let c = centerC + dx;
-        if (r < 0) r = 0;
-        if (r >= rows) r = rows - 1;
-        if (c < 0) c = 0;
-        if (c >= cols) c = cols - 1;
-        grid[r][c] = 1;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.sqrt(Math.random()) * radius;
+        const dx = Math.round(Math.cos(angle) * dist);
+        const dy = Math.round(Math.sin(angle) * dist);
+        const r = Math.max(0, Math.min(rows - 1, centerR + dy));
+        const c = Math.max(0, Math.min(cols - 1, centerC + dx));
+        grid[r][c] = 0;
         colorGrid[r][c] = randomColor();
+        residueGrid[r][c] = Math.floor(Math.random() * 5) + 1;
+        if (Math.random() < 0.5) {
+            flickerCountGrid[r][c] = Math.floor(Math.random() * 3) + 1;
+        }
     }
 
     drawGrid();
