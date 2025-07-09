@@ -28,11 +28,14 @@ export function updateCellState(params) {
         residueGrid,
         lastStateGrid,
         flickerCountGrid,
+        potentialGrid,
         r,
         c,
         n,
         harmonyRatio,
-        collapseLimit
+        collapseLimit,
+        potentialThreshold,
+        decayRate
     } = params;
 
     const flickerCount = flickerCountGrid[r][c];
@@ -64,6 +67,22 @@ export function updateCellState(params) {
         flickerCountGrid[r][c] = 0;
     }
 
+    let emergent = false;
+    // Potential accumulation for dormant cells
+    potentialGrid[r][c] *= decayRate;
+    if (val === 0) {
+        if (n > 0) {
+            potentialGrid[r][c] += n / 8;
+            if (potentialGrid[r][c] >= potentialThreshold) {
+                val = 1;
+                emergent = true;
+                potentialGrid[r][c] = 0;
+            }
+        }
+    } else {
+        potentialGrid[r][c] = 0;
+    }
+
     lastStateGrid[r][c] = val;
-    return { val, folded };
+    return { val, folded, emergent };
 }

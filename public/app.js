@@ -33,6 +33,8 @@ const collapseThresholdInput = document.getElementById('collapseThreshold');
 const reverseBtn = document.getElementById('reverseBtn');
 const neighborSlider = document.getElementById('neighborSlider');
 const neighborValueSpan = document.getElementById('neighborValue');
+const potentialThresholdInput = document.getElementById('potentialThreshold');
+const potentialDecayInput = document.getElementById('potentialDecay');
 const debugCheckbox = document.getElementById('debugOverlay');
 const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
@@ -62,6 +64,8 @@ let residueGrid = [];
 let foldGrid = [];
 let flickerCountGrid = [];
 let lastStateGrid = [];
+let potentialGrid = [];
+let emergentGrid = [];
 let running = false;
 let intervalId = null;
 let tool = 'brush';
@@ -76,6 +80,8 @@ let debugOverlay = false;
 let fieldTensionMode = 'none';
 let activeCellCount = 0;
 let collapseThreshold = parseFloat(collapseThresholdInput.value || '1') * 1000 * PULSE_UNIT;
+let potentialThreshold = parseFloat(potentialThresholdInput ? potentialThresholdInput.value : '0.5');
+let decayRate = parseFloat(potentialDecayInput ? potentialDecayInput.value : '0.95');
 let showGridLines = true;
 let centerView = false;
 let offsetX = 0;
@@ -150,6 +156,8 @@ function createGrid() {
     foldGrid = [];
     flickerCountGrid = [];
     lastStateGrid = [];
+    potentialGrid = [];
+    emergentGrid = [];
     for (let r = 0; r < rows; r++) {
         const row = [];
         const cRow = [];
@@ -157,6 +165,8 @@ function createGrid() {
         const foldRow = [];
         const flickerRow = [];
         const lastRow = [];
+        const potRow = [];
+        const emergentRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
             cRow.push(currentColor);
@@ -164,6 +174,8 @@ function createGrid() {
             foldRow.push(0);
             flickerRow.push(0);
             lastRow.push(0);
+            potRow.push(0);
+            emergentRow.push(0);
         }
         grid.push(row);
         colorGrid.push(cRow);
@@ -171,6 +183,8 @@ function createGrid() {
         foldGrid.push(foldRow);
         flickerCountGrid.push(flickerRow);
         lastStateGrid.push(lastRow);
+        potentialGrid.push(potRow);
+        emergentGrid.push(emergentRow);
     }
     prevGrid = copyGrid(grid);
 }
@@ -198,6 +212,8 @@ function resizeGrid(oldRows, oldCols) {
     foldGrid = copy(foldGrid, 0);
     flickerCountGrid = copy(flickerCountGrid, 0);
     lastStateGrid = copy(lastStateGrid, 0);
+    potentialGrid = copy(potentialGrid, 0);
+    emergentGrid = copy(emergentGrid, 0);
 }
 
 // Set every cell in colorGrid to the provided color
@@ -242,6 +258,9 @@ function drawGrid() {
                 }
             } else if (foldGrid[r][c] === 1) {
                 ctx.fillStyle = '#111';
+            } else if (potentialGrid[r][c] > 0) {
+                const alpha = Math.min(potentialGrid[r][c] / potentialThreshold, 1) * 0.6;
+                ctx.fillStyle = `rgba(255, 255, 100, ${alpha})`;
             } else {
                 ctx.fillStyle = '#222';
             }
@@ -398,21 +417,26 @@ function update() {
         }
         let next = [];
         let nextFold = [];
+        let nextEmergent = [];
         for (let r = 0; r < rows; r++) {
             const row = [];
             const foldRow = [];
+            const emergentRow = [];
             for (let c = 0; c < cols; c++) {
                 const n = getNeighborsSum(grid, r, c);
-                const { val, folded } = updateCellState({
+                const { val, folded, emergent } = updateCellState({
                     grid,
                     residueGrid,
                     lastStateGrid,
                     flickerCountGrid,
+                    potentialGrid,
                     r,
                     c,
                     n,
                     harmonyRatio,
-                    collapseLimit
+                    collapseLimit,
+                    potentialThreshold,
+                    decayRate
                 });
 
                 if (debugOverlay) {
@@ -421,9 +445,11 @@ function update() {
 
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
+                emergentRow.push(emergent ? 1 : 0);
             }
             next.push(row);
             nextFold.push(foldRow);
+            nextEmergent.push(emergentRow);
         }
 
         // propagate flicker to neighbors
@@ -446,6 +472,7 @@ function update() {
 
         grid = next;
         foldGrid = nextFold;
+        emergentGrid = nextEmergent;
         pulses.forEach(p => {
             if (p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols) {
                 grid[p.r][p.c] = p.remaining % 2;
@@ -583,6 +610,8 @@ function applyTool(r, c) {
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
+        potentialGrid[r][c] = 0;
+        emergentGrid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = running ? pulseLength : (parseInt(pulseLengthInput.value) || 1);
         pulses.push({ r, c, remaining: len * 2, color: currentColor });
@@ -591,6 +620,8 @@ function applyTool(r, c) {
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
+        potentialGrid[r][c] = 0;
+        emergentGrid[r][c] = 0;
     } else if (tool === 'stamper') {
         const pattern = patterns.find(p => p.name === patternSelect.value);
         if (pattern) {
@@ -603,6 +634,8 @@ function applyTool(r, c) {
                     foldGrid[nr][nc] = 0;
                     lastStateGrid[nr][nc] = 1;
                     flickerCountGrid[nr][nc] = 0;
+                    potentialGrid[nr][nc] = 0;
+                    emergentGrid[nr][nc] = 0;
                 }
             });
         }
@@ -615,6 +648,8 @@ function eraseCell(r, c) {
     foldGrid[r][c] = 0;
     lastStateGrid[r][c] = 0;
     flickerCountGrid[r][c] = 0;
+    potentialGrid[r][c] = 0;
+    emergentGrid[r][c] = 0;
     drawGrid();
 }
 // UI handlers
@@ -1132,6 +1167,18 @@ neighborSlider.addEventListener('input', () => {
     neighborThreshold = parseInt(neighborSlider.value);
     neighborValueSpan.textContent = neighborSlider.value;
 });
+
+if (potentialThresholdInput) {
+    potentialThresholdInput.addEventListener('input', () => {
+        potentialThreshold = parseFloat(potentialThresholdInput.value);
+    });
+}
+
+if (potentialDecayInput) {
+    potentialDecayInput.addEventListener('input', () => {
+        decayRate = parseFloat(potentialDecayInput.value);
+    });
+}
 
 foldSlider.addEventListener('input', () => {
     foldValueSpan.textContent = foldSlider.value;
