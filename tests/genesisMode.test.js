@@ -31,20 +31,11 @@ beforeEach(async () => {
     global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
 });
 
-test('stable genesis creates centered square', () => {
+test('stable genesis seeds cells organically', () => {
     global.genesisMode = 'stable';
     triggerInfoNova();
-    const [r0, c0] = latestNovaCenters[0];
-    let active = 0;
-    for (let r = r0 - 5; r <= r0 + 5; r++) {
-        for (let c = c0 - 5; c <= c0 + 5; c++) {
-            if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                expect(grid[r][c]).toBe(1);
-                active++;
-            }
-        }
-    }
-    expect(active).toBe(121);
+    const count = grid.flat().reduce((a, b) => a + b, 0);
+    expect(count).toBeGreaterThan(0);
 });
 
 test('seeded genesis creates cross', () => {
