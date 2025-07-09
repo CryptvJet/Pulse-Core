@@ -3,6 +3,8 @@ import { countActiveCells } from './tension.js';
 
 // Base multiplier for translating user input into collapse energy units
 const PULSE_UNIT = 2000; // adjust empirically if needed
+// Maximum value used when normalizing residue for color phase
+const MAX_RESIDUE = 10;
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -251,36 +253,41 @@ function invertHexColor(hex) {
     return { r, g, b };
 }
 
+// Map a phase value [0,1] to a hue on the red→cyan spectrum
+function getColorFromPhase(phase) {
+    const hue = Math.round(Math.max(0, Math.min(1, phase)) * 180);
+    return `hsl(${hue}, 100%, 50%)`;
+}
+
 function drawGrid() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
     const drawSize = showGridLines ? Math.max(cellSize - 1, 1) : cellSize;
+    const collapseLimit = parseInt(foldSlider.value);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const cellVal = grid[r][c];
             const residue = residueGrid[r][c];
-            if (cellVal === 1) {
-                if (running && pulseFlash && flickerCountGrid[r][c] > 0) {
-                    ctx.fillStyle = '#000';
-                } else {
-                    ctx.fillStyle = colorGrid[r][c];
-                }
-            } else if (cellVal === 0.5) {
-                const { r: rr, g: gg, b: bb } = invertHexColor(colorGrid[r][c]);
-                ctx.fillStyle = `rgba(${rr}, ${gg}, ${bb}, 0.4)`;
-            } else if (foldGrid[r][c] === 1) {
-                ctx.fillStyle = '#111';
-            } else if (residue > 0 && cellVal === 0) {
-                const { r: rr, g: gg, b: bb } = invertHexColor(colorGrid[r][c]);
-                const alpha = Math.min(1, residue / 10);
-                ctx.fillStyle = `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
-            } else if (potentialGrid[r][c] > 0) {
-                const alpha = Math.min(potentialGrid[r][c] / potentialThreshold, 1) * 0.6;
-                ctx.fillStyle = `rgba(255, 255, 100, ${alpha})`;
+            const flicker = flickerCountGrid[r][c];
+            const folded = foldGrid[r][c];
+            const potential = potentialGrid[r][c];
+
+            let phase = cellVal;
+            phase = Math.max(phase, Math.min(1, residue / MAX_RESIDUE));
+            phase = Math.max(phase, collapseLimit > 0 ? Math.min(1, flicker / collapseLimit) : 0);
+            phase = Math.max(phase, potentialThreshold > 0 ? Math.min(1, potential / potentialThreshold) : 0);
+            phase = Math.max(0, Math.min(1, phase));
+
+            let color = getColorFromPhase(phase);
+            if (folded === 1) {
+                color = 'hsl(0, 0%, 10%)';
+            }
+            if (running && pulseFlash && flicker > 0 && cellVal === 1) {
+                ctx.fillStyle = '#000';
             } else {
-                ctx.fillStyle = '#222';
+                ctx.fillStyle = color;
             }
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
@@ -1491,4 +1498,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase };
