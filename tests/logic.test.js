@@ -192,3 +192,53 @@ test('potential accumulation sparks cell on', () => {
     expect(res.val).toBe(1);
     expect(potential[0][0]).toBe(0);
 });
+
+test('residue over threshold activates cell fully', () => {
+    const grid = [[0]];
+    const residue = [[4]];
+    const last = [[0]];
+    const flicker = [[0]];
+    const potential = [[0]];
+    const params = {
+        grid,
+        residueGrid: residue,
+        lastStateGrid: last,
+        flickerCountGrid: flicker,
+        potentialGrid: potential,
+        r: 0,
+        c: 0,
+        n: 0,
+        harmonyRatio: 0,
+        collapseLimit: 0,
+        potentialThreshold: 1,
+        decayRate: 1
+    };
+    const res = updateCellState(params);
+    expect(res.val).toBe(1);
+    expect(residue[0][0]).toBe(3);
+});
+
+test('residue low sets semi-active glow', () => {
+    const grid = [[0]];
+    const residue = [[2]];
+    const last = [[0]];
+    const flicker = [[0]];
+    const potential = [[0]];
+    const params = {
+        grid,
+        residueGrid: residue,
+        lastStateGrid: last,
+        flickerCountGrid: flicker,
+        potentialGrid: potential,
+        r: 0,
+        c: 0,
+        n: 0,
+        harmonyRatio: 0,
+        collapseLimit: 0,
+        potentialThreshold: 1,
+        decayRate: 1
+    };
+    const res = updateCellState(params);
+    expect(res.val).toBe(0.5);
+    expect(residue[0][0]).toBe(1);
+});

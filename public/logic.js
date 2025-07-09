@@ -47,9 +47,11 @@ export function updateCellState(params) {
         val = lastStateGrid[r][c] === 0 ? 1 : 0;
     }
 
-    // Residue nudges the cell toward on without overriding
+    // Residue nudges the cell toward on or a semi-active glow
     if (residueGrid[r][c] > 0) {
-        val = Math.max(val, (residueGrid[r][c] / 5));
+        const residue = residueGrid[r][c];
+        const residueVal = residue > 3 ? 1 : 0.5;
+        val = Math.max(val, residueVal);
         residueGrid[r][c]--;
     }
 
@@ -83,6 +85,8 @@ export function updateCellState(params) {
         potentialGrid[r][c] = 0;
     }
 
+    // Clamp to valid range
+    val = Math.max(0, Math.min(1, val));
     lastStateGrid[r][c] = val;
     return { val, folded, emergent };
 }

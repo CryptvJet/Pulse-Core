@@ -244,10 +244,10 @@ function countCellChanges(prev, curr) {
 }
 
 function invertHexColor(hex) {
-    if (hex.startsWith('#')) hex = hex.slice(1);
-    const r = 255 - parseInt(hex.slice(0, 2), 16);
-    const g = 255 - parseInt(hex.slice(2, 4), 16);
-    const b = 255 - parseInt(hex.slice(4, 6), 16);
+    if (hex[0] === "#") hex = hex.slice(1);
+    const r = 255 - parseInt(hex.substring(0, 2), 16);
+    const g = 255 - parseInt(hex.substring(2, 4), 16);
+    const b = 255 - parseInt(hex.substring(4, 6), 16);
     return { r, g, b };
 }
 
@@ -259,17 +259,22 @@ function drawGrid() {
     const drawSize = showGridLines ? Math.max(cellSize - 1, 1) : cellSize;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (grid[r][c] === 1) {
+            const cellVal = grid[r][c];
+            const residue = residueGrid[r][c];
+            if (cellVal === 1) {
                 if (running && pulseFlash && flickerCountGrid[r][c] > 0) {
                     ctx.fillStyle = '#000';
                 } else {
                     ctx.fillStyle = colorGrid[r][c];
                 }
+            } else if (cellVal === 0.5) {
+                const { r: rr, g: gg, b: bb } = invertHexColor(colorGrid[r][c]);
+                ctx.fillStyle = `rgba(${rr}, ${gg}, ${bb}, 0.4)`;
             } else if (foldGrid[r][c] === 1) {
                 ctx.fillStyle = '#111';
-            } else if (residueGrid[r][c] > 0) {
+            } else if (residue > 0 && cellVal === 0) {
                 const { r: rr, g: gg, b: bb } = invertHexColor(colorGrid[r][c]);
-                const alpha = Math.min(1, residueGrid[r][c] / 10);
+                const alpha = Math.min(1, residue / 10);
                 ctx.fillStyle = `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
             } else if (potentialGrid[r][c] > 0) {
                 const alpha = Math.min(potentialGrid[r][c] / potentialThreshold, 1) * 0.6;
