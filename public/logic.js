@@ -38,12 +38,15 @@ export function updateCellState(params) {
     const flickerCount = flickerCountGrid[r][c];
     const cap = getResonanceCap(r, c, grid.length, grid[0].length);
 
-    // Base value derived from neighbor harmony with negative feedback
-    let val = (n / 8 >= harmonyRatio && flickerCount < cap) ? 1 : 0;
+    // Base value derived from neighbor harmony with pulse toggling
+    let val = 0;
+    if (n / 8 >= harmonyRatio && flickerCount < cap) {
+        val = lastStateGrid[r][c] === 0 ? 1 : 0;
+    }
 
-    // Residue nudges the cell on but never overrides completely
+    // Residue nudges the cell toward on without overriding
     if (residueGrid[r][c] > 0) {
-        val = Math.max(val, 1);
+        val = Math.max(val, (residueGrid[r][c] / 5));
         residueGrid[r][c]--;
     }
 
@@ -51,7 +54,7 @@ export function updateCellState(params) {
     if (val !== lastStateGrid[r][c]) {
         flickerCountGrid[r][c] += 1;
     } else if (flickerCountGrid[r][c] > 0) {
-        flickerCountGrid[r][c] -= 1;
+        flickerCountGrid[r][c] *= 0.9;
     }
 
     let folded = false;

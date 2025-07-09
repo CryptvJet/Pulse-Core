@@ -97,6 +97,42 @@ test('flicker count increments when state changes', () => {
     expect(val).toBe(1);
     expect(flicker[0][0]).toBe(1);
     ({ val } = updateCellState(params));
+    expect(val).toBe(0);
+    expect(flicker[0][0]).toBeGreaterThan(1);
+});
+
+test('flicker count decays softly when stable', () => {
+    const grid = [
+        [0]
+    ];
+    const residue = [
+        [0]
+    ];
+    const last = [
+        [0]
+    ];
+    const flicker = [
+        [0]
+    ];
+    const params = {
+        grid,
+        residueGrid: residue,
+        lastStateGrid: last,
+        flickerCountGrid: flicker,
+        r: 0,
+        c: 0,
+        n: 8,
+        harmonyRatio: 0.25,
+        collapseLimit: 5
+    };
+    let { val } = updateCellState(params);
     expect(val).toBe(1);
     expect(flicker[0][0]).toBe(1);
+    ({ val } = updateCellState(params));
+    expect(val).toBe(0);
+    expect(flicker[0][0]).toBe(2);
+    params.n = 0;
+    ({ val } = updateCellState(params));
+    expect(val).toBe(0);
+    expect(flicker[0][0]).toBeCloseTo(1.8);
 });
