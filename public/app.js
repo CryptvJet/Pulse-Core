@@ -850,6 +850,40 @@ function triggerBigBang(tension) {
     console.log('Big Bang at', new Date().toISOString(), 'tension=', fieldTension);
 }
 
+function getRandomColor(tension) {
+    const base = tension % 255;
+    const r = (base + Math.random() * 50) % 255;
+    const g = (255 - base + Math.random() * 50) % 255;
+    const b = (base * 2 + Math.random() * 50) % 255;
+    return `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+}
+
+function generateNovaPattern(centerR, centerC, tension, pulseLen) {
+    const pattern = [];
+    const size = Math.min(100, Math.floor(tension / 50));
+    const radius = Math.max(2, Math.floor(size / 3));
+    for (let dr = -radius; dr <= radius; dr++) {
+        for (let dc = -radius; dc <= radius; dc++) {
+            const dist = Math.sqrt(dr * dr + dc * dc);
+            const chance = Math.cos(dist * Math.PI / radius) + Math.random() * 0.3;
+            if (chance > 0.3) {
+                const r = centerR + dr;
+                const c = centerC + dc;
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    pattern.push({
+                        r,
+                        c,
+                        state: 1,
+                        pulse: pulseLen,
+                        color: getRandomColor(tension)
+                    });
+                }
+            }
+        }
+    }
+    return pattern;
+}
+
 function seedSymmetricalBurst(cr, cc) {
     for (let r = cr - 5; r <= cr + 5; r++) {
         for (let c = cc - 5; c <= cc + 5; c++) {
@@ -927,6 +961,7 @@ function loadPatternFromMemory(cr, cc) {
 
 function triggerInfoNova() {
     hideNovaInfoBoxes();
+    const tensionValue = countActiveCells(grid);
     const searchRadius = Math.max(2, Math.min(5, Math.floor(Math.min(rows, cols) / 4)));
     let maxScore = -1;
     let novaCandidates = [];
@@ -1052,9 +1087,13 @@ function triggerInfoNova() {
         }
         latestNovaCenters.forEach(([originR, originC], idx) => {
             switch (genesisMode) {
-            case 'stable':
-                seedSymmetricalBurst(originR, originC);
-                break;
+            case 'stable': {
+                const cells = generateNovaPattern(originR, originC, tensionValue, pulseLength);
+                cells.forEach(({ r, c, state, color }) => {
+                    grid[r][c] = state;
+                    colorGrid[r][c] = color;
+                });
+                break; }
             case 'chaotic':
                 seedRandomScatter(originR, originC, 0.05);
                 break;
