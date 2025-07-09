@@ -29,7 +29,7 @@ Adjusting the zoom slider now scales the existing grid so it always fills the wi
 3. Press **Start** to begin pulsing; **Stop** pauses the animation.
 4. Adjust sliders and checkboxes to experiment with different behaviors. The collapse threshold (in Pulse Units) controls how much energy accumulates before the field clears.
 5. When the threshold is crossed, a **Data Nova** burst clears the grid, shows a brief message and resumes from frame 0.
-6. Save your design with **Save Pattern** or restore a previous one with **Upload Pattern**.
+6. Save your design with **Save Pattern** (press Enter after typing a name) or restore a previous one with **Upload Pattern**.
 7. Use **Randomize** to populate the current grid with randomly placed cells.
 8. If nova circles appear without data boxes, ensure `<div id="novaInfoContainer"></div>` exists in `index.html` near the bottom of the page.
 
