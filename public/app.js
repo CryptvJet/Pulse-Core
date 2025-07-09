@@ -379,7 +379,8 @@ function update() {
     }
     const frameDuration = now - lastFrameTime;
     lastFrameTime = now;
-    const foldThreshold = parseInt(foldSlider.value);
+    const collapseLimit = parseInt(foldSlider.value);
+    const harmonyRatio = neighborThreshold / 8;
     if (reverse) {
         const prev = history.pop();
         if (prev) {
@@ -402,7 +403,17 @@ function update() {
             const foldRow = [];
             for (let c = 0; c < cols; c++) {
                 const n = getNeighborsSum(grid, r, c);
-                const { val, folded } = updateCellState({ grid, residueGrid, lastStateGrid, flickerCountGrid, neighborThreshold, r, c, n, foldThreshold });
+                const { val, folded } = updateCellState({
+                    grid,
+                    residueGrid,
+                    lastStateGrid,
+                    flickerCountGrid,
+                    r,
+                    c,
+                    n,
+                    harmonyRatio,
+                    collapseLimit
+                });
 
                 if (debugOverlay) {
                     console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
