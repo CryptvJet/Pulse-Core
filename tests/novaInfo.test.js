@@ -24,5 +24,5 @@ test('showNovaInfo displays box and centers on click', () => {
     expect(boxes[0].classList.contains('show')).toBe(true);
     boxes[0].querySelector('.focusNovaBtn').click();
     expect(spy).toHaveBeenCalledWith([2, 3]);
-    expect(document.querySelectorAll('.novaInfoBox').length).toBe(0);
+    expect(document.querySelectorAll('.novaInfoBox').length).toBe(1);
 });

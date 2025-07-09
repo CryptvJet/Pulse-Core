@@ -893,7 +893,7 @@ function triggerInfoNova() {
     }
     latestNovaCenter = latestNovaCenters[0];
 
-    if (genesisPhase === 'pre' && pulseCounter === 0 && latestNovaCenters.length > 1) {
+    if (genesisPhase === 'pre' && latestNovaCenters.length > 1) {
         selectionPending = true;
         stop();
         drawGrid();
@@ -921,7 +921,6 @@ function triggerInfoNova() {
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
                 novaOverlay.classList.remove('prompt', 'show');
-                hideNovaInfoBoxes();
                 performNovaSequence();
             }
         };
@@ -957,7 +956,6 @@ function triggerInfoNova() {
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
                 novaOverlay.classList.remove('prompt', 'show');
-                hideNovaInfoBoxes();
                 performNovaSequence();
             }
         };
@@ -1001,9 +999,7 @@ function triggerInfoNova() {
         pulseCounter = 0;
         prevGrid = copyGrid(grid);
         drawGrid();
-        if (genesisPhase === 'post') {
-            latestNovaCenters.forEach(showNovaInfo);
-        }
+        latestNovaCenters.forEach(showNovaInfo);
         if (novaOverlay) {
             novaOverlay.classList.add('show');
             setTimeout(() => {
@@ -1268,8 +1264,7 @@ function showNovaInfo(center) {
     if (btn) {
         btn.addEventListener('click', () => {
             centerOnNova(center);
-            hideNovaInfoBoxes();
-        }, { once: true });
+        });
     }
 }
 
