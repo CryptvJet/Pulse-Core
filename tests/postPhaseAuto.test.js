@@ -11,6 +11,7 @@ beforeEach(async () => {
         <input id="pulseLength" value="2" />
         <div id="novaOverlay"></div>
         <div id="novaInfoContainer"></div>
+        <input id="zoomSlider" value="10" />
     `;
     mod = await import('../public/app.js');
     triggerInfoNova = mod.triggerInfoNova;
@@ -35,9 +36,17 @@ beforeEach(async () => {
     prevGrid[7][7] = 1;
 });
 
-test('triggerInfoNova automatically seeds all novas in post phase', () => {
+test('triggerInfoNova waits for manual selection in post phase', () => {
     triggerInfoNova();
-    expect(global.start).toHaveBeenCalled();
+    // start should not fire until a nova center is chosen
+    expect(global.start).not.toHaveBeenCalled();
     const boxes = document.querySelectorAll('.novaInfoBox');
     expect(boxes.length).toBe(2);
+    const canvas = document.getElementById('grid');
+    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 80, height: 80 });
+    global.cellSize = 10;
+    global.offsetX = 0;
+    global.offsetY = 0;
+    canvas.dispatchEvent(new MouseEvent('click', { clientX: 5, clientY: 5 }));
+    expect(global.start).toHaveBeenCalled();
 });
