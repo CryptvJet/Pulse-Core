@@ -43,3 +43,12 @@ test('triggerInfoNova shows an info box for each nova center', () => {
     expect(boxes.length).toBe(2);
     boxes.forEach(box => expect(box.classList.contains('show')).toBe(true));
 });
+
+test('triggerInfoNova displays info box when only one nova exists', () => {
+    global.prevGrid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    prevGrid[3][3] = 1;
+    triggerInfoNova();
+    const boxes = document.querySelectorAll('.novaInfoBox');
+    expect(boxes.length).toBe(1);
+    expect(boxes[0].classList.contains('show')).toBe(true);
+});

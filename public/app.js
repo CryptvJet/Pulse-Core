@@ -829,6 +829,7 @@ function loadPatternFromMemory(cr, cc) {
 }
 
 function triggerInfoNova() {
+    hideNovaInfoBoxes();
     const searchRadius = Math.max(2, Math.min(5, Math.floor(Math.min(rows, cols) / 4)));
     let maxScore = -1;
     let novaCandidates = [];
@@ -896,6 +897,9 @@ function triggerInfoNova() {
         latestNovaCenters = [[Math.floor(rows / 2), Math.floor(cols / 2)]];
     }
     latestNovaCenter = latestNovaCenters[0];
+    if (latestNovaCenters.length === 1) {
+        latestNovaCenters.forEach(showNovaInfo);
+    }
 
     if (genesisPhase === 'pre' && latestNovaCenters.length > 1) {
         selectionPending = true;
