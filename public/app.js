@@ -1285,9 +1285,10 @@ function showNovaInfo(center) {
     const container = document.getElementById('novaInfoContainer') || document.body;
     const box = document.createElement('div');
     box.className = 'popupOverlay novaInfo novaInfoBox show';
+    const rect = canvas.getBoundingClientRect();
     const [r, c] = center;
-    const x = c * cellSize + offsetX + cellSize / 2;
-    const y = r * cellSize + offsetY + cellSize / 2;
+    const x = rect.left + c * cellSize + offsetX + cellSize / 2;
+    const y = rect.top + r * cellSize + offsetY + cellSize / 2;
     box.style.left = `${x}px`;
     box.style.top = `${y}px`;
     box.dataset.row = r;
@@ -1308,8 +1309,9 @@ function repositionNovaInfoBoxes() {
         const r = parseInt(box.dataset.row, 10);
         const c = parseInt(box.dataset.col, 10);
         if (!isNaN(r) && !isNaN(c)) {
-            const x = c * cellSize + offsetX + cellSize / 2;
-            const y = r * cellSize + offsetY + cellSize / 2;
+            const rect = canvas.getBoundingClientRect();
+            const x = rect.left + c * cellSize + offsetX + cellSize / 2;
+            const y = rect.top + r * cellSize + offsetY + cellSize / 2;
             box.style.left = `${x}px`;
             box.style.top = `${y}px`;
         }
