@@ -1239,6 +1239,16 @@ if (patternSaverButton) {
     patternSaverButton.addEventListener('click', saveCurrentPattern);
 }
 
+const patternNameInput = document.getElementById('patternName');
+if (patternNameInput && patternSaverButton) {
+    patternNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveCurrentPattern();
+        }
+    });
+}
+
 if (patternLoader) {
     patternLoader.addEventListener('change', (e) => handlePatternSelection(e.target));
 }
