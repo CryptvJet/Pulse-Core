@@ -903,6 +903,13 @@ function triggerInfoNova() {
     }
 
     if (genesisPhase === 'pre' && latestNovaCenters.length > 1) {
+        // Pre phase now launches all novas immediately
+        performNovaSequence();
+        return;
+    }
+
+    if (genesisPhase === 'post' && latestNovaCenters.length > 1) {
+        // Post phase pauses and lets the user choose a single nova
         selectionPending = true;
         stop();
         drawGrid();
@@ -934,12 +941,6 @@ function triggerInfoNova() {
             }
         };
         canvas.addEventListener('click', handler);
-        return;
-    }
-
-    if (genesisPhase === 'post' && latestNovaCenters.length > 1) {
-        // In post phase multiple novas should trigger automatically
-        performNovaSequence();
         return;
     }
 
