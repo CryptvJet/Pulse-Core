@@ -53,6 +53,7 @@ const aboutPopup = document.getElementById('aboutPopup');
 const directionsPopup = document.getElementById('directionsPopup');
 const closeButtons = document.querySelectorAll('.closePopup');
 const novaOverlay = document.getElementById('novaOverlay');
+const hardResetBtn = document.getElementById('hardResetBtn');
 let currentColor = colorPicker.value;
 
 let cellSize = parseInt(zoomSlider.value);
@@ -1382,6 +1383,23 @@ if (menuToggle && slideMenu) {
     menuToggle.addEventListener('click', () => {
         slideMenu.classList.toggle('open');
     });
+}
+
+function hardReset() {
+    try { localStorage.clear(); } catch (e) { /* ignore */ }
+    try { sessionStorage.clear(); } catch (e) { /* ignore */ }
+    document.cookie.split(';').forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.slice(0, eqPos).trim() : cookie.trim();
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    });
+    const url = new URL(window.location.href);
+    url.searchParams.set('_bust', Date.now());
+    window.location.replace(url.toString());
+}
+
+if (hardResetBtn) {
+    hardResetBtn.addEventListener('click', hardReset);
 }
 
 // Additional hooks for pulse direction and substrate density will be added later.

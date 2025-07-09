@@ -14,6 +14,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
 - **Optional overlays** – Toggle pulse flash, field tension mapping and grid lines.
 - **Center View option** – Keep the field centered while zooming or resizing.
+- **Hard Reset button** – Clears local storage, session storage and cookies, then reloads with cache busting.
  - **Data Nova** – If accumulated energy exceeds the collapse threshold, the grid
   clears and one or more novas explode from the densest regions before the simulation restarts.
 - **Genesis Mode** – Choose how Data Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
