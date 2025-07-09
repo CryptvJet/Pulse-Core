@@ -52,7 +52,7 @@ The current mode is displayed on screen and logged to the console whenever seedi
 
 ## Development
 
-This repository uses ESLint for basic linting. Install dependencies and run:
+This repository uses ESLint for basic linting. Install dependencies first and then run:
 
 ```sh
 npm install

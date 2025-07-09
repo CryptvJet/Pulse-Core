@@ -897,7 +897,7 @@ function triggerInfoNova() {
         selectionPending = true;
         stop();
         drawGrid();
-        showNovaInfo(latestNovaCenters[0]);
+        latestNovaCenters.forEach(showNovaInfo);
         if (novaOverlay) {
             novaOverlay.textContent = 'Choose Timeline';
             novaOverlay.classList.add('prompt', 'show');
@@ -921,8 +921,7 @@ function triggerInfoNova() {
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
                 novaOverlay.classList.remove('prompt', 'show');
-                const info = document.getElementById('novaInfoBox');
-                if (info) info.classList.remove('show');
+                hideNovaInfoBoxes();
                 performNovaSequence();
             }
         };
@@ -934,7 +933,7 @@ function triggerInfoNova() {
         selectionPending = true;
         stop();
         drawGrid();
-        showNovaInfo(latestNovaCenters[0]);
+        latestNovaCenters.forEach(showNovaInfo);
         if (novaOverlay) {
             novaOverlay.textContent = 'Choose Nova';
             novaOverlay.classList.add('prompt', 'show');
@@ -958,8 +957,7 @@ function triggerInfoNova() {
                 latestNovaCenters = [chosen];
                 latestNovaCenter = chosen;
                 novaOverlay.classList.remove('prompt', 'show');
-                const info = document.getElementById('novaInfoBox');
-                if (info) info.classList.remove('show');
+                hideNovaInfoBoxes();
                 performNovaSequence();
             }
         };
@@ -970,6 +968,7 @@ function triggerInfoNova() {
     performNovaSequence();
 
     function performNovaSequence() {
+        hideNovaInfoBoxes();
         clearGrid(false);
         console.log('Seeding: ' + genesisMode);
         if (novaOverlay) {
@@ -1003,7 +1002,7 @@ function triggerInfoNova() {
         prevGrid = copyGrid(grid);
         drawGrid();
         if (genesisPhase === 'post') {
-            showNovaInfo(latestNovaCenter);
+            latestNovaCenters.forEach(showNovaInfo);
         }
         if (novaOverlay) {
             novaOverlay.classList.add('show');
@@ -1249,21 +1248,27 @@ function centerOnNova([r, c]) {
     drawGrid();
 }
 
+function hideNovaInfoBoxes() {
+    document.querySelectorAll('.novaInfoBox').forEach(el => el.remove());
+}
+
 function showNovaInfo(center) {
-    const box = document.getElementById('novaInfoBox');
-    if (!box || !center) return;
+    if (!center) return;
+    const container = document.getElementById('novaInfoContainer') || document.body;
+    const box = document.createElement('div');
+    box.className = 'popupOverlay novaInfo novaInfoBox show';
     const [r, c] = center;
     const x = c * cellSize + offsetX + cellSize / 2;
     const y = r * cellSize + offsetY + cellSize / 2;
     box.style.left = `${x}px`;
     box.style.top = `${y}px`;
-    box.innerHTML = `<div>Nova (${r}, ${c})</div><button id="focusNovaBtn">Center</button>`;
-    box.classList.add('show');
-    const btn = document.getElementById('focusNovaBtn');
+    box.innerHTML = `<div>Nova (${r}, ${c})</div><button class="focusNovaBtn">Center</button>`;
+    container.appendChild(box);
+    const btn = box.querySelector('.focusNovaBtn');
     if (btn) {
         btn.addEventListener('click', () => {
             centerOnNova(center);
-            box.classList.remove('show');
+            hideNovaInfoBoxes();
         }, { once: true });
     }
 }

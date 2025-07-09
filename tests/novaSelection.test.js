@@ -10,7 +10,7 @@ beforeEach(async () => {
         <input id="frameRateSlider" value="100" />
         <input id="pulseLength" value="2" />
         <div id="novaOverlay"></div>
-        <div id="novaInfoBox"></div>
+        <div id="novaInfoContainer"></div>
     `;
     mod = await import('../public/app.js');
     triggerInfoNova = mod.triggerInfoNova;
@@ -35,10 +35,11 @@ beforeEach(async () => {
     prevGrid[7][7] = 1;
 });
 
-test('triggerInfoNova shows info box when selection begins', () => {
+test('triggerInfoNova shows an info box for each nova center', () => {
     const spy = jest.spyOn(mod, 'showNovaInfo');
     triggerInfoNova();
-    expect(spy).toHaveBeenCalled();
-    const box = document.getElementById('novaInfoBox');
-    expect(box.classList.contains('show')).toBe(true);
+    expect(spy).toHaveBeenCalledTimes(2);
+    const boxes = document.querySelectorAll('.novaInfoBox');
+    expect(boxes.length).toBe(2);
+    boxes.forEach(box => expect(box.classList.contains('show')).toBe(true));
 });
