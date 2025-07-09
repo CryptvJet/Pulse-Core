@@ -243,6 +243,14 @@ function countCellChanges(prev, curr) {
     return changes;
 }
 
+function invertHexColor(hex) {
+    if (hex.startsWith('#')) hex = hex.slice(1);
+    const r = 255 - parseInt(hex.slice(0, 2), 16);
+    const g = 255 - parseInt(hex.slice(2, 4), 16);
+    const b = 255 - parseInt(hex.slice(4, 6), 16);
+    return { r, g, b };
+}
+
 function drawGrid() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -259,6 +267,10 @@ function drawGrid() {
                 }
             } else if (foldGrid[r][c] === 1) {
                 ctx.fillStyle = '#111';
+            } else if (residueGrid[r][c] > 0) {
+                const { r: rr, g: gg, b: bb } = invertHexColor(colorGrid[r][c]);
+                const alpha = Math.min(1, residueGrid[r][c] / 10);
+                ctx.fillStyle = `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
             } else if (potentialGrid[r][c] > 0) {
                 const alpha = Math.min(potentialGrid[r][c] / potentialThreshold, 1) * 0.6;
                 ctx.fillStyle = `rgba(255, 255, 100, ${alpha})`;
@@ -1404,4 +1416,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor };
