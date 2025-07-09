@@ -1265,7 +1265,12 @@ function hideNovaInfoBoxes() {
 
 function showNovaInfo(center) {
     if (!center) return;
-    const container = document.getElementById('novaInfoContainer') || document.body;
+    let container = document.getElementById('novaInfoContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'novaInfoContainer';
+        document.body.appendChild(container);
+    }
     const box = document.createElement('div');
     box.className = 'popupOverlay novaInfo novaInfoBox show';
     const rect = canvas.getBoundingClientRect();
