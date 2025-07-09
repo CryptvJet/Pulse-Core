@@ -671,6 +671,7 @@ function start() {
     lastFrameTime = performance.now();
     accumulatedEnergy = 0;
     prevGrid = copyGrid(grid);
+    lastStateGrid = copyGrid(grid);
     frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';

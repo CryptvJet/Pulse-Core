@@ -64,3 +64,39 @@ test('updateCellState collapses when flicker exceeds limit', () => {
     expect(val).toBe(0);
     expect(folded).toBe(true);
 });
+
+test('flicker count increments when state changes', () => {
+    const grid = [
+        [0,0],
+        [0,0]
+    ];
+    const residue = [
+        [0,0],
+        [0,0]
+    ];
+    const last = [
+        [0,0],
+        [0,0]
+    ];
+    const flicker = [
+        [0,0],
+        [0,0]
+    ];
+    const params = {
+        grid,
+        residueGrid: residue,
+        lastStateGrid: last,
+        flickerCountGrid: flicker,
+        r: 0,
+        c: 0,
+        n: 3,
+        harmonyRatio: 0.25,
+        collapseLimit: 5
+    };
+    let { val } = updateCellState(params);
+    expect(val).toBe(1);
+    expect(flicker[0][0]).toBe(1);
+    ({ val } = updateCellState(params));
+    expect(val).toBe(1);
+    expect(flicker[0][0]).toBe(1);
+});
