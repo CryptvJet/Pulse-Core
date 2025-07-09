@@ -15,6 +15,13 @@ export function getNeighborsSum(grid, r, c) {
     return sum;
 }
 
+export function getResonanceCap(r, c, rows, cols) {
+    const edge = Math.min(r, c, rows - 1 - r, cols - 1 - c);
+    const maxDist = Math.max(1, Math.min(rows, cols) / 2);
+    const ratio = edge / maxDist; // 0 at edge, 1 at center
+    return Math.round(3 + ratio * 5); // lower cap near edges
+}
+
 export function updateCellState(params) {
     const {
         grid,
@@ -28,8 +35,11 @@ export function updateCellState(params) {
         collapseLimit
     } = params;
 
-    // Base value derived from neighbor harmony
-    let val = (n / 8) >= harmonyRatio ? 1 : 0;
+    const flickerCount = flickerCountGrid[r][c];
+    const cap = getResonanceCap(r, c, grid.length, grid[0].length);
+
+    // Base value derived from neighbor harmony with negative feedback
+    let val = (n / 8 >= harmonyRatio && flickerCount < cap) ? 1 : 0;
 
     // Residue nudges the cell on but never overrides completely
     if (residueGrid[r][c] > 0) {
