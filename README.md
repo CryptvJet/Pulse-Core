@@ -31,6 +31,7 @@ Adjusting the zoom slider now scales the existing grid so it always fills the wi
 5. When the threshold is crossed, a **Data Nova** burst clears the grid, shows a brief message and resumes from frame 0.
 6. Save your design with **Save Pattern** or restore a previous one with **Upload Pattern**.
 7. Use **Randomize** to populate the current grid with randomly placed cells.
+8. If nova circles appear without data boxes, ensure `<div id="novaInfoContainer"></div>` exists in `index.html` near the bottom of the page.
 
 Everything happens client-side, so once loaded you can use the tool without an internet connection.
 
