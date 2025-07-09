@@ -38,6 +38,7 @@ const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
+const patternSaverButton = document.getElementById('patternSaverButton');
 const gridLinesToggle = document.getElementById('gridLinesToggle');
 const genesisSelect = document.getElementById('genesisModeSelect');
 const postPhaseToggle = document.getElementById('postPhaseToggle');
@@ -1233,6 +1234,18 @@ startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
 clearBtn.addEventListener('click', clearGrid);
 randomizeBtn.addEventListener('click', randomizeGrid);
+
+if (patternSaverButton) {
+    patternSaverButton.addEventListener('click', saveCurrentPattern);
+}
+
+if (patternLoader) {
+    patternLoader.addEventListener('change', (e) => handlePatternSelection(e.target));
+}
+
+if (patternUploadBtn) {
+    patternUploadBtn.addEventListener('click', uploadPattern);
+}
 
 function openPopup(el) {
     if (el) {
