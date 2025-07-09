@@ -2,7 +2,7 @@ import * as mod from '../public/app.js';
 
 document.body.innerHTML = `
     <canvas id="grid"></canvas>
-    <div id="novaInfoBox"></div>
+    <div id="novaInfoContainer"></div>
 `;
 
 const canvas = document.getElementById('grid');
@@ -19,9 +19,10 @@ global.drawGrid = jest.fn();
 test('showNovaInfo displays box and centers on click', () => {
     const spy = jest.spyOn(mod, 'centerOnNova');
     mod.showNovaInfo([2, 3]);
-    const box = document.getElementById('novaInfoBox');
-    expect(box.classList.contains('show')).toBe(true);
-    document.getElementById('focusNovaBtn').click();
+    const boxes = document.querySelectorAll('.novaInfoBox');
+    expect(boxes.length).toBe(1);
+    expect(boxes[0].classList.contains('show')).toBe(true);
+    boxes[0].querySelector('.focusNovaBtn').click();
     expect(spy).toHaveBeenCalledWith([2, 3]);
-    expect(box.classList.contains('show')).toBe(false);
+    expect(document.querySelectorAll('.novaInfoBox').length).toBe(0);
 });

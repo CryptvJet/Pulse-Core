@@ -207,7 +207,8 @@ canvas.flash {
     to { opacity: 0; }
 }
 
-#novaInfoBox {
+#novaInfoContainer .novaInfoBox,
+.novaInfoBox {
     position: absolute;
     background: rgba(34, 34, 34, 0.95);
     padding: 10px;
@@ -218,7 +219,7 @@ canvas.flash {
     transform: translate(-50%, -50%);
 }
 
-#novaInfoBox.show {
+.novaInfoBox.show {
     display: block;
 }
 
