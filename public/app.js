@@ -93,6 +93,7 @@ let latestNovaCenters = [];
 let genesisMode = 'stable'; // stable | chaotic | organic | fractal | seeded
 let genesisPhase = 'pre'; // pre | post
 let selectionPending = false;
+let showNovaHighlight = false;
 
 function lockGenesisPhase() {
     if (postPhaseToggle) postPhaseToggle.disabled = true;
@@ -253,7 +254,7 @@ function drawGrid() {
             }
         }
     }
-    if (debugOverlay || selectionPending) {
+    if (debugOverlay || selectionPending || showNovaHighlight) {
         if (debugOverlay) {
             const mode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
             if (mode === 'none') {
@@ -273,6 +274,7 @@ function drawGrid() {
             ctx.stroke();
         });
     }
+    repositionNovaInfoBoxes();
 }
 
 // Stub for rendering different field tension overlays
@@ -692,6 +694,7 @@ function clearGrid(resetStats = true) {
         pulseEnergySpan.textContent = '0';
     }
     drawGrid();
+    hideNovaInfoBoxes();
 }
 
 function randomizeGrid() {
@@ -740,6 +743,7 @@ function randomizeGrid() {
         colorGrid[r][c] = currentColor;
     }
     drawGrid();
+    hideNovaInfoBoxes();
 }
 
 function triggerBigBang() {
@@ -1246,6 +1250,7 @@ function centerOnNova([r, c]) {
 
 function hideNovaInfoBoxes() {
     document.querySelectorAll('.novaInfoBox').forEach(el => el.remove());
+    showNovaHighlight = false;
 }
 
 function showNovaInfo(center) {
@@ -1258,14 +1263,30 @@ function showNovaInfo(center) {
     const y = r * cellSize + offsetY + cellSize / 2;
     box.style.left = `${x}px`;
     box.style.top = `${y}px`;
+    box.dataset.row = r;
+    box.dataset.col = c;
     box.innerHTML = `<div>Nova (${r}, ${c})</div><button class="focusNovaBtn">Center</button>`;
     container.appendChild(box);
+    showNovaHighlight = true;
     const btn = box.querySelector('.focusNovaBtn');
     if (btn) {
         btn.addEventListener('click', () => {
             centerOnNova(center);
         });
     }
+}
+
+function repositionNovaInfoBoxes() {
+    document.querySelectorAll('.novaInfoBox').forEach(box => {
+        const r = parseInt(box.dataset.row, 10);
+        const c = parseInt(box.dataset.col, 10);
+        if (!isNaN(r) && !isNaN(c)) {
+            const x = c * cellSize + offsetX + cellSize / 2;
+            const y = r * cellSize + offsetY + cellSize / 2;
+            box.style.left = `${x}px`;
+            box.style.top = `${y}px`;
+        }
+    });
 }
 
 if (aboutLink && aboutPopup) {
@@ -1300,4 +1321,4 @@ if (menuToggle && slideMenu) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes };

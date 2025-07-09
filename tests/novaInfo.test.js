@@ -26,3 +26,14 @@ test('showNovaInfo displays box and centers on click', () => {
     expect(spy).toHaveBeenCalledWith([2, 3]);
     expect(document.querySelectorAll('.novaInfoBox').length).toBe(1);
 });
+
+test('repositionNovaInfoBoxes updates coordinates after zoom', () => {
+    mod.showNovaInfo([1, 1]);
+    const box = document.querySelector('.novaInfoBox');
+    expect(box.style.left).toBe('15px');
+    expect(box.style.top).toBe('15px');
+    global.cellSize = 20;
+    mod.repositionNovaInfoBoxes();
+    expect(box.style.left).toBe('30px');
+    expect(box.style.top).toBe('30px');
+});
