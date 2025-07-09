@@ -812,11 +812,40 @@ function randomizeGrid() {
     hideNovaInfoBoxes();
 }
 
-function triggerBigBang() {
+function triggerBigBang(tension) {
     canvas.classList.add('flash');
     setTimeout(() => canvas.classList.remove('flash'), 100);
+
+    const fieldTension = typeof tension === 'number' ? tension : countActiveCells(grid);
+    let novaSize = Math.min(100, Math.floor(fieldTension / 10));
+    if (novaSize < 1) novaSize = 1;
+
     clearGrid(false);
-    console.log('Big Bang at', new Date().toISOString());
+
+    const centerR = Math.floor(rows / 2);
+    const centerC = Math.floor(cols / 2);
+    const radius = Math.max(1, Math.ceil(Math.sqrt(novaSize)));
+
+    function randomColor() {
+        return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+    }
+
+    for (let i = 0; i < novaSize; i++) {
+        const dx = Math.floor((Math.random() * 2 - 1) * radius);
+        const dy = Math.floor((Math.random() * 2 - 1) * radius);
+        let r = centerR + dy;
+        let c = centerC + dx;
+        if (r < 0) r = 0;
+        if (r >= rows) r = rows - 1;
+        if (c < 0) c = 0;
+        if (c >= cols) c = cols - 1;
+        grid[r][c] = 1;
+        colorGrid[r][c] = randomColor();
+    }
+
+    drawGrid();
+    hideNovaInfoBoxes();
+    console.log('Big Bang at', new Date().toISOString(), 'tension=', fieldTension);
 }
 
 function seedSymmetricalBurst(cr, cc) {
