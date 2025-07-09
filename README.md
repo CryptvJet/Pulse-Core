@@ -17,7 +17,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
  - **Data Nova** – If accumulated energy exceeds the collapse threshold, the grid
   clears and one or more novas explode from the densest regions before the simulation restarts.
 - **Genesis Mode** – Choose how Data Nova seeds cells on restart: stable, chaotic, organic, fractal or seeded.
-- **Genesis Phase** – Decide whether multiple novas collapse in Pre-Pulse (manual selection) or Post-Pulse (automatic) mode.
+- **Genesis Phase** – Choose **Pre-Pulse** to manually pick a single nova when multiple centers tie, or **Post-Pulse** to automatically launch them all.
 
 The grid automatically resizes with your browser window. Use the **Resolution Limit** slider to cap the maximum grid size (250–2000 cells per side). Values above 800 display a warning as high resolutions may impact performance.
 Adjusting the zoom slider now scales the existing grid so it always fills the window.
@@ -45,9 +45,7 @@ When a **Data Nova** occurs, the selected genesis mode seeds the initial pattern
 - **Fractal** – Recursively lays out cells in a fractal cross pattern.
 - **Seeded** – Loads a user-defined pattern from memory.
 
-The **Genesis Phase** toggle determines whether, when multiple dense regions tie,
-you select one origin before the first frame (Pre-Pulse) or all activate automatically
-after the pulse begins (Post-Pulse).
+The **Genesis Phase** toggle controls multi-nova behavior. In **Pre-Pulse** mode you select a single origin when several dense regions compete. In **Post-Pulse** mode no selection occurs — every detected nova spawns automatically on restart.
 
 The current mode is displayed on screen and logged to the console whenever seeding happens.
 
