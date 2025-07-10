@@ -11,7 +11,7 @@ Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simu
 - **Tool selection** – Switch between brush, pulse injector and pattern stamper. Right-click cells to erase.
 - **Color picker** – Choose the color used for brush strokes, injected pulses and stamped patterns. Cell rendering now uses a phase-based gradient.
 - **Tinted colors** – When the Phase Colors toggle is off, each cell is drawn using a tinted version of its assigned color based on phase.
-- **Phase colors** – Hue represents cell phase from red (inactive) to cyan (active) with intermediate tones for residue and flicker.
+- **Phase colors** – Hue represents cell phase from red (inactive) to cyan (active) with intermediate tones for residue and flicker. Use the Phase Mode dropdown to switch between color and grayscale.
 - **Reverse stepping** – Walk backward through up to 200 prior pulses.
 - **Pattern saving** – Download the entire grid as a JSON file and reload it later with the upload option.
 - **Optional overlays** – Toggle field tension mapping and grid lines.

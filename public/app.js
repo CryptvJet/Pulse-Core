@@ -95,6 +95,7 @@ let offsetY = 0;
 let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
 let showPhaseColor = false;
+let phaseMode = 'color';
 let enableSound = false;
 let audioCtx = null;
 let lastFrameTime = performance.now();
@@ -274,6 +275,15 @@ function getHueFromPhase(phase) {
     return `hsl(${hue}, 100%, 50%)`;
 }
 
+function getPhaseColor(phase) {
+    if (phaseMode === 'grayscale') {
+        const brightness = Math.floor(Math.max(0, Math.min(1, phase)) * 255);
+        return `rgb(${brightness}, ${brightness}, ${brightness})`;
+    }
+    const hue = phase * 180;
+    return `hsl(${hue}, 100%, 50%)`;
+}
+
 function getValueFromPhase(phase) {
     const brightness = Math.floor(phase * 255);
     return `rgb(${brightness}, ${brightness}, ${brightness})`;
@@ -346,7 +356,7 @@ function drawGrid() {
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (showPhaseColor) {
-                ctx.fillStyle = getHueFromPhase(phase);
+                ctx.fillStyle = getPhaseColor(phase);
                 ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
             }
 
@@ -1386,6 +1396,13 @@ if (phaseColorToggle) {
     });
 }
 
+const phaseModeSelect = document.getElementById('phaseMode');
+if (phaseModeSelect) {
+    phaseModeSelect.addEventListener('change', (e) => {
+        phaseMode = e.target.value;
+    });
+}
+
 if (soundToggle) {
     soundToggle.addEventListener('change', () => {
         enableSound = soundToggle.checked;
@@ -1563,4 +1580,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase, getResonanceLevel };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode };
