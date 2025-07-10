@@ -15,7 +15,7 @@ export function getNeighborsSum(grid, r, c) {
     return sum;
 }
 
-export function getResonanceCap(r, c, rows, cols) {
+function getResonanceCap(r, c, rows, cols) {
     const edge = Math.min(r, c, rows - 1 - r, cols - 1 - c);
     const maxDist = Math.max(1, Math.min(rows, cols) / 2);
     const ratio = edge / maxDist; // 0 at edge, 1 at center
