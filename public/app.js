@@ -7,7 +7,6 @@ const PULSE_UNIT = 2000; // adjust empirically if needed
 const MAX_RESIDUE = 10;
 // Number of harmonic tiers used to bucket phase values
 const harmonicCount = 8;
-const baseFreq = 220;
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -25,7 +24,6 @@ const toolSelect = document.getElementById('toolSelect');
 const pulseLengthInput = document.getElementById('pulseLength');
 let pulseLength = parseInt(pulseLengthInput.value);
 const patternSelect = document.getElementById('patternSelect');
-const pulseLengthLabel = document.getElementById('pulseLengthLabel');
 const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
@@ -525,11 +523,6 @@ function update() {
                     potentialThreshold,
                     decayRate
                 });
-
-                if (debugOverlay) {
-                    console.log('threshold', neighborThreshold, 'row', r, 'col', c, 'n', n, 'val', val);
-                }
-
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
                 emergentRow.push(emergent ? 1 : 0);
@@ -917,7 +910,6 @@ function triggerBigBang(tension) {
 
     drawGrid();
     hideNovaInfoBoxes();
-    console.log('Big Bang at', new Date().toISOString(), 'tension=', fieldTension);
 }
 
 function getRandomColor(tension) {
@@ -1150,7 +1142,6 @@ function triggerInfoNova() {
     function performNovaSequence() {
         hideNovaInfoBoxes();
         clearGrid(false);
-        console.log('Seeding: ' + genesisMode);
         if (novaOverlay) {
             const modeDisplay = genesisMode.charAt(0).toUpperCase() + genesisMode.slice(1);
             novaOverlay.innerHTML = modeDisplay + '<br>Data Nova';
@@ -1177,7 +1168,6 @@ function triggerInfoNova() {
                 loadPatternFromMemory(originR, originC);
                 break;
             default:
-                console.log('Unknown genesis mode:', genesisMode);
                 break;
             }
         });
@@ -1193,7 +1183,6 @@ function triggerInfoNova() {
                 novaOverlay.textContent = 'Data Nova';
             }, 1200);
         }
-        console.log('Data Nova at', new Date().toISOString());
         start();
     }
 }
