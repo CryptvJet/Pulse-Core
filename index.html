@@ -103,6 +103,8 @@
             <a href="#" id="aboutLink">About</a>
             <span>|</span>
             <a href="#" id="directionsLink">Directions</a>
+            <span>|</span>
+            <a href="#" id="algosLink">Algos</a>
         </div>
 
         <div id="hardResetRow" class="controlRow">
@@ -137,6 +139,28 @@
             <li>The <strong>Reverse</strong> button steps backward through previous pulses.</li>
         </ol>
     <p>Once loaded, the tool works entirely offline.</p>
+    </div>
+
+    <div id="algosPopup" class="popupOverlay infoSection">
+        <button class="closePopup">X</button>
+        <h2>Algos</h2>
+        <p>Pulse-Core relies on a few simple rules that echo Binary Pulse Theory. Cells flip between 0 and 1 as pulses move across the grid.</p>
+        <h3>Simulation Basics</h3>
+        <ul>
+            <li><strong>Pulse Propagation</strong> – Cells change state based on neighbors and built up potential.</li>
+            <li><strong>Neighbor Count</strong> – Active neighbors push a cell past its threshold.</li>
+            <li><strong>Fold Threshold</strong> – Large clusters collapse into new forms.</li>
+            <li><strong>Pulse Length</strong> – Sets how long a pulse lasts before fading.</li>
+            <li><strong>Potential &amp; Decay</strong> – Potential rises and falls over time; crossing the limit may flip a cell.</li>
+            <li><strong>Collapse Events</strong> – When energy climbs too high the field wipes and restarts.</li>
+        </ul>
+        <h3>Binary Pulse Theory</h3>
+        <ul>
+            <li>Each cell is a tiny pulse flickering between 0 and 1.</li>
+            <li>Stable shapes mimic molecules while unstable ones create turbulence.</li>
+            <li>Waves, shells and explosions all arise from these simple steps.</li>
+        </ul>
+        <p>This popout shows how basic logic can build complex patterns.</p>
     </div>
 
     <canvas id="grid"></canvas>
