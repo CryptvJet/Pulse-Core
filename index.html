@@ -11,7 +11,9 @@
     <button id="menuToggle">Menu</button>
     <div id="slideMenu">
     <div id="controls">
-        <h4>🧪 Simulation State</h4>
+        <div class="section">
+        <h4 class="sectionHeader">🧪 Simulation State</h4>
+        <div class="sectionContent">
         <div id="stateLabel">State: Pre-Pulse</div>
         <div id="genesisRow" class="controlRow">
             <label for="genesisModeSelect">Genesis Mode:</label>
@@ -38,7 +40,15 @@
             <div id="pulseCounterDisplay">Frame: <span id="pulseCounter">0</span></div>
             <button id="reverseBtn">Reverse</button>
         </div>
-        <h4>🔧 Logic Settings</h4>
+        </div>
+        </div>
+        <div class="section">
+        <h4 class="sectionHeader">🔧 Logic Settings</h4>
+        <div class="sectionContent">
+        <div>Frame Duration: <span id="frameDuration">0</span>ms</div>
+        <div>Complexity: <span id="frameComplexity">0</span></div>
+        <div>Pulse Energy: <span id="pulseEnergy">0</span></div>
+        <div id="tensionDisplay">Tension: <span id="tensionValue">0</span></div>
         <label>Frame Rate: <input type="range" id="frameRateSlider" min="50" max="1000" step="50" value="500"></label>
         <label>Collapse Threshold (Pulse Units) <span title="Total pulse energy that collapses the grid.">ℹ️</span>: <input type="number" id="collapseThreshold" value="1" step="0.001"></label>
         <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
@@ -54,7 +64,11 @@
         <label>Potential Threshold: <input type="number" id="potentialThreshold" min="0" max="1" step="0.05" value="0.5"></label>
         <label>Potential Decay <span title="How quickly pulse energy dissipates in inactive cells.">ℹ️</span>: <input type="number" id="potentialDecay" min="0.90" max="0.99" step="0.01" value="0.95"></label>
         <label id="pulseLengthLabel">Pulse Length <span title="Number of frames a cell stays active after flipping.">ℹ️</span>: <input type="number" id="pulseLength" value="3" min="1" /></label>
-        <h4>🎨 Display & Audio</h4>
+        </div>
+        </div>
+        <div class="section">
+        <h4 class="sectionHeader">🎨 Display & Audio</h4>
+        <div class="sectionContent">
         <label><input type="checkbox" id="debugOverlay"> Field Tension Mapping</label>
         <select id="fieldTensionMode" style="margin-top:4px">
             <option value="none" selected>None</option>
@@ -75,13 +89,13 @@
         <label><input type="checkbox" id="soundToggle"> Enable Sound</label>
         <label><input type="checkbox" id="gridLinesToggle" checked> Grid Lines</label>
         <label><input type="checkbox" id="centerViewToggle"> Center View</label>
-        <div>Frame Duration: <span id="frameDuration">0</span>ms</div>
-        <div>Complexity: <span id="frameComplexity">0</span></div>
-        <div>Pulse Energy: <span id="pulseEnergy">0</span></div>
-        <div id="tensionDisplay">Tension: <span id="tensionValue">0</span></div>
+        </div>
+        </div>
     </div>
 
-    <h4>💾 Pattern Tools</h4>
+    <div class="section">
+    <h4 class="sectionHeader">💾 Pattern Tools</h4>
+    <div class="sectionContent">
     <div id="tools">
         <label>Tool:
             <select id="toolSelect">
@@ -114,7 +128,8 @@
         <div id="hardResetRow" class="controlRow">
             <button id="hardResetBtn">Hard Reset</button>
         </div>
-
+    </div>
+    </div>
     </div>
 
     <div id="aboutPopup" class="popupOverlay infoSection">

@@ -1597,6 +1597,16 @@ if (hardResetBtn) {
     hardResetBtn.addEventListener('click', hardReset);
 }
 
+// Make sections collapsible
+document.querySelectorAll('.sectionHeader').forEach(header => {
+    header.addEventListener('click', () => {
+        const content = header.nextElementSibling;
+        if (content && content.classList.contains('sectionContent')) {
+            content.classList.toggle('collapsed');
+        }
+    });
+});
+
 // Additional hooks for pulse direction and substrate density will be added later.
 
 export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode };
