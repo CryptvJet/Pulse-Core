@@ -120,6 +120,13 @@ function unlockGenesisPhase() {
     if (postPhaseToggle) postPhaseToggle.disabled = false;
 }
 
+function updateControlState() {
+    const disable = running;
+    if (randomizeBtn) randomizeBtn.disabled = disable;
+    if (genesisSelect) genesisSelect.disabled = disable;
+    if (postPhaseToggle) postPhaseToggle.disabled = disable;
+}
+
 function updateZoom() {
     // Update the pixel size for each cell based on the zoom slider
     // and refresh the grid dimensions so the canvas remains filled.
@@ -796,6 +803,7 @@ function start() {
     running = true;
     startBtn.disabled = true;
     stopBtn.disabled = false;
+    updateControlState();
     stateLabel.classList.remove('pulse-start');
     pulseLength = parseInt(pulseLengthInput.value);
     pulseLengthInput.disabled = true;
@@ -814,6 +822,7 @@ function stop() {
     running = false;
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    updateControlState();
     pulseLengthInput.disabled = false;
     clearInterval(intervalId);
     stateLabel.textContent = 'State: Paused';
@@ -1291,6 +1300,7 @@ function init() {
     fieldTensionMode = fieldTensionDropdown ? fieldTensionDropdown.value : 'none';
     genesisMode = genesisSelect ? genesisSelect.value : 'stable';
     genesisPhase = postPhaseToggle && postPhaseToggle.checked ? 'post' : 'pre';
+    updateControlState();
 }
 
 window.addEventListener('resize', () => {
