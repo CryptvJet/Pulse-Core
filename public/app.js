@@ -40,6 +40,7 @@ const potentialDecayInput = document.getElementById('potentialDecay');
 const debugCheckbox = document.getElementById('debugOverlay');
 const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
+const phaseColorToggle = document.getElementById('phaseColorToggle');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const patternSaverButton = document.getElementById('patternSaverButton');
@@ -93,6 +94,7 @@ let offsetY = 0;
 let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
 let pulseFlash = true;
+let showPhaseColor = false;
 let lastFrameTime = performance.now();
 let startTime = null;
 let timeElapsed = 0;
@@ -253,10 +255,33 @@ function invertHexColor(hex) {
     return { r, g, b };
 }
 
+function getHueFromPhase(phase) {
+    const hue = phase * 180;
+    return `hsl(${hue}, 100%, 50%)`;
+}
+
+function getValueFromPhase(phase) {
+    const brightness = Math.floor(phase * 255);
+    return `rgb(${brightness}, ${brightness}, ${brightness})`;
+}
+
 // Map a phase value [0,1] to a hue on the red→cyan spectrum
 function getColorFromPhase(phase) {
     const hue = Math.round(Math.max(0, Math.min(1, phase)) * 180);
     return `hsl(${hue}, 100%, 50%)`;
+}
+
+function getPhaseForCell(r, c) {
+    const cellVal = grid[r][c];
+    const residue = residueGrid[r][c];
+    const flicker = flickerCountGrid[r][c];
+    const potential = potentialGrid[r][c];
+    const collapseLimit = parseInt(foldSlider.value);
+    let phase = cellVal;
+    phase = Math.max(phase, Math.min(1, residue / MAX_RESIDUE));
+    phase = Math.max(phase, collapseLimit > 0 ? Math.min(1, flicker / collapseLimit) : 0);
+    phase = Math.max(phase, potentialThreshold > 0 ? Math.min(1, potential / potentialThreshold) : 0);
+    return Math.max(0, Math.min(1, phase));
 }
 
 function drawGrid() {
@@ -269,27 +294,24 @@ function drawGrid() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const cellVal = grid[r][c];
-            const residue = residueGrid[r][c];
             const flicker = flickerCountGrid[r][c];
             const folded = foldGrid[r][c];
-            const potential = potentialGrid[r][c];
+            const phase = getPhaseForCell(r, c);
 
-            let phase = cellVal;
-            phase = Math.max(phase, Math.min(1, residue / MAX_RESIDUE));
-            phase = Math.max(phase, collapseLimit > 0 ? Math.min(1, flicker / collapseLimit) : 0);
-            phase = Math.max(phase, potentialThreshold > 0 ? Math.min(1, potential / potentialThreshold) : 0);
-            phase = Math.max(0, Math.min(1, phase));
-
-            let color = getColorFromPhase(phase);
-            if (folded === 1) {
-                color = 'hsl(0, 0%, 10%)';
-            }
-            if (running && pulseFlash && flicker > 0 && cellVal === 1) {
-                ctx.fillStyle = '#000';
-            } else {
-                ctx.fillStyle = color;
-            }
+            ctx.fillStyle = getValueFromPhase(phase);
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
+
+            if (showPhaseColor) {
+                let overlay = getHueFromPhase(phase);
+                if (folded === 1) {
+                    overlay = 'hsl(0, 0%, 10%)';
+                }
+                if (running && pulseFlash && flicker > 0 && cellVal === 1) {
+                    overlay = '#000';
+                }
+                ctx.fillStyle = overlay;
+                ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
+            }
 
             if (debugOverlay) {
                 const n = getNeighborsSum(grid, r, c);
@@ -1206,6 +1228,7 @@ function init() {
         resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
     }
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
+    showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
     unlockGenesisPhase();
@@ -1326,6 +1349,13 @@ if (postPhaseToggle) {
 if (pulseFlashCheckbox) {
     pulseFlashCheckbox.addEventListener('change', () => {
         pulseFlash = pulseFlashCheckbox.checked;
+        drawGrid();
+    });
+}
+
+if (phaseColorToggle) {
+    phaseColorToggle.addEventListener('change', () => {
+        showPhaseColor = phaseColorToggle.checked;
         drawGrid();
     });
 }
@@ -1498,4 +1528,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase };
