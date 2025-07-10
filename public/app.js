@@ -42,7 +42,6 @@ const potentialThresholdInput = document.getElementById('potentialThreshold');
 const potentialDecayInput = document.getElementById('potentialDecay');
 const debugCheckbox = document.getElementById('debugOverlay');
 const fieldTensionDropdown = document.getElementById('fieldTensionMode');
-const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const phaseColorToggle = document.getElementById('phaseColorToggle');
 const soundToggle = document.getElementById('soundToggle');
 const patternLoader = document.getElementById('patternLoader');
@@ -97,7 +96,6 @@ let offsetY = 0;
 // Maximum row/column count before zoom is restricted.
 let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
-let pulseFlash = true;
 let showPhaseColor = false;
 let enableSound = false;
 let audioCtx = null;
@@ -885,9 +883,6 @@ function randomizeGrid() {
 }
 
 function triggerBigBang(tension) {
-    canvas.classList.add('flash');
-    setTimeout(() => canvas.classList.remove('flash'), 100);
-
     const fieldTension = typeof tension === 'number' ? tension : countActiveCells(grid);
     let novaSize = Math.min(100, Math.floor(fieldTension / 10));
     if (novaSize < 1) novaSize = 1;
@@ -1270,7 +1265,6 @@ function init() {
     if (resolutionWarning) {
         resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
     }
-    pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
     enableSound = soundToggle ? soundToggle.checked : false;
     if (enableSound && !audioCtx) {
@@ -1390,13 +1384,6 @@ if (postPhaseToggle) {
         if (!postPhaseToggle.disabled) {
             genesisPhase = postPhaseToggle.checked ? 'post' : 'pre';
         }
-    });
-}
-
-if (pulseFlashCheckbox) {
-    pulseFlashCheckbox.addEventListener('change', () => {
-        pulseFlash = pulseFlashCheckbox.checked;
-        drawGrid();
     });
 }
 
