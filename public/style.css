@@ -239,6 +239,15 @@ body {
     animation: pulse-glow 0.3s ease-out;
 }
 
+.sectionHeader {
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.sectionContent.collapsed {
+    display: none;
+}
+
 @keyframes pulse-glow {
     from { box-shadow: 0 0 6px #fff; }
     to { box-shadow: none; }
