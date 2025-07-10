@@ -324,14 +324,14 @@ function drawGrid() {
     if (phaseColorToggle) {
         showPhaseColor = phaseColorToggle.checked;
     }
-    // When grid lines are shown, fill the canvas with a light gray background so
-    // the 1px gaps between cells appear as visible grid lines. Otherwise use a
+    // When grid lines are shown, fill the canvas with a dark gray background so
+    // the small gaps between cells appear as subtle grid lines. Otherwise use a
     // solid black background.
-    ctx.fillStyle = showGridLines ? '#444' : '#000';
+    ctx.fillStyle = showGridLines ? '#222' : '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
-    const drawSize = showGridLines ? Math.max(cellSize - 1, 1) : cellSize;
+    const drawSize = showGridLines ? Math.max(cellSize - 0.5, 0.5) : cellSize;
     const collapseLimit = parseInt(foldSlider.value);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
