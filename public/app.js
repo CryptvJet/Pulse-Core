@@ -53,8 +53,10 @@ const resolutionSlider = document.getElementById('resolutionSlider');
 const resolutionWarning = document.getElementById('resolutionWarning');
 const aboutLink = document.getElementById('aboutLink');
 const directionsLink = document.getElementById('directionsLink');
+const algosLink = document.getElementById('algosLink');
 const aboutPopup = document.getElementById('aboutPopup');
 const directionsPopup = document.getElementById('directionsPopup');
+const algosPopup = document.getElementById('algosPopup');
 const closeButtons = document.querySelectorAll('.closePopup');
 const novaOverlay = document.getElementById('novaOverlay');
 const hardResetBtn = document.getElementById('hardResetBtn');
@@ -1542,6 +1544,13 @@ if (directionsLink && directionsPopup) {
     directionsLink.addEventListener('click', (e) => {
         e.preventDefault();
         openPopup(directionsPopup);
+    });
+}
+
+if (algosLink && algosPopup) {
+    algosLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openPopup(algosPopup);
     });
 }
 
