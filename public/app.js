@@ -1603,6 +1603,7 @@ document.querySelectorAll('.sectionHeader').forEach(header => {
         const content = header.nextElementSibling;
         if (content && content.classList.contains('sectionContent')) {
             content.classList.toggle('collapsed');
+            header.classList.toggle('collapsed');
         }
     });
 });

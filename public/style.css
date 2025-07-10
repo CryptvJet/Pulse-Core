@@ -242,6 +242,17 @@ body {
 .sectionHeader {
     cursor: pointer;
     margin-top: 10px;
+    position: relative;
+}
+
+.sectionHeader::after {
+    content: '▲';
+    margin-left: 4px;
+    font-size: 0.8em;
+}
+
+.sectionHeader.collapsed::after {
+    content: '▼';
 }
 
 .sectionContent.collapsed {
