@@ -5,6 +5,8 @@ import { countActiveCells } from './tension.js';
 const PULSE_UNIT = 2000; // adjust empirically if needed
 // Maximum value used when normalizing residue for color phase
 const MAX_RESIDUE = 10;
+// Number of harmonic tiers used to bucket phase values
+const harmonicCount = 8;
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -284,6 +286,11 @@ function getPhaseForCell(r, c) {
     return Math.max(0, Math.min(1, phase));
 }
 
+// Map a continuous phase value into one of the harmonic tiers
+function getResonanceLevel(phase) {
+    return Math.min(harmonicCount - 1, Math.floor(phase * harmonicCount));
+}
+
 function drawGrid() {
     // Ensure the phase color toggle reflects the current checkbox state
     if (phaseColorToggle) {
@@ -301,12 +308,14 @@ function drawGrid() {
             const flicker = flickerCountGrid[r][c];
             const folded = foldGrid[r][c];
             const phase = getPhaseForCell(r, c);
+            const resonanceLevel = getResonanceLevel(phase);
 
             ctx.fillStyle = getValueFromPhase(phase);
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (showPhaseColor) {
-                let overlay = getHueFromPhase(phase);
+                const tierHueOffset = resonanceLevel * 30;
+                let overlay = `hsl(${tierHueOffset}, 100%, 60%)`;
                 if (folded === 1) {
                     overlay = 'hsl(0, 0%, 10%)';
                 }
@@ -1532,4 +1541,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase, getResonanceLevel };
