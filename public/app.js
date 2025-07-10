@@ -324,7 +324,10 @@ function drawGrid() {
     if (phaseColorToggle) {
         showPhaseColor = phaseColorToggle.checked;
     }
-    ctx.fillStyle = '#000';
+    // When grid lines are shown, fill the canvas with a light gray background so
+    // the 1px gaps between cells appear as visible grid lines. Otherwise use a
+    // solid black background.
+    ctx.fillStyle = showGridLines ? '#444' : '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
     ctx.textBaseline = 'top';
