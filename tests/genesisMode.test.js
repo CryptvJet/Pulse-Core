@@ -17,7 +17,7 @@ beforeEach(async () => {
     global.rows = 20;
     global.cols = 20;
     global.grid = Array.from({ length: rows }, () => Array(cols).fill(0));
-    global.colorGrid = Array.from({ length: rows }, () => Array(cols).fill('#fff'));
+    global.colorGrid = Array.from({ length: rows }, () => Array(cols).fill(null));
     global.neighborThreshold = 1;
     global.pulseLength = 2;
     global.foldSlider = { value: '0' };

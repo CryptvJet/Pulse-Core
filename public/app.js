@@ -58,6 +58,7 @@ const closeButtons = document.querySelectorAll('.closePopup');
 const novaOverlay = document.getElementById('novaOverlay');
 const hardResetBtn = document.getElementById('hardResetBtn');
 let currentColor = colorPicker.value;
+let currentPhase = getPhaseFromColor(currentColor);
 
 let cellSize = parseInt(zoomSlider.value);
 let rows;
@@ -174,7 +175,7 @@ function createGrid() {
         const emergentRow = [];
         for (let c = 0; c < cols; c++) {
             row.push(0);
-            cRow.push(currentColor);
+            cRow.push(null);
             resRow.push(0);
             foldRow.push(0);
             flickerRow.push(0);
@@ -212,7 +213,7 @@ function resizeGrid(oldRows, oldCols) {
     }
 
     grid = copy(grid, 0);
-    colorGrid = copy(colorGrid, currentColor);
+    colorGrid = copy(colorGrid, null);
     residueGrid = copy(residueGrid, 0);
     foldGrid = copy(foldGrid, 0);
     flickerCountGrid = copy(flickerCountGrid, 0);
@@ -221,11 +222,11 @@ function resizeGrid(oldRows, oldCols) {
     emergentGrid = copy(emergentGrid, 0);
 }
 
-// Set every cell in colorGrid to the provided color
-function applyColorToGrid(color) {
+// Set every cell in colorGrid to the provided phase value
+function applyColorToGrid(phase) {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            colorGrid[r][c] = color;
+            colorGrid[r][c] = phase;
         }
     }
 }
@@ -255,6 +256,30 @@ function invertHexColor(hex) {
     return { r, g, b };
 }
 
+function getPhaseFromColor(hex) {
+    if (!hex) return 0;
+    if (hex[0] === '#') hex = hex.slice(1);
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    let h = 0;
+    if (delta !== 0) {
+        if (max === r) {
+            h = ((g - b) / delta) % 6;
+        } else if (max === g) {
+            h = (b - r) / delta + 2;
+        } else {
+            h = (r - g) / delta + 4;
+        }
+        h *= 60;
+        if (h < 0) h += 360;
+    }
+    return Math.max(0, Math.min(1, h / 180));
+}
+
 function getHueFromPhase(phase) {
     const hue = phase * 180;
     return `hsl(${hue}, 100%, 50%)`;
@@ -272,6 +297,10 @@ function getColorFromPhase(phase) {
 }
 
 function getPhaseForCell(r, c) {
+    const painted = colorGrid[r][c];
+    if (painted !== null && painted !== undefined) {
+        return Math.max(0, Math.min(1, painted));
+    }
     const cellVal = grid[r][c];
     const residue = residueGrid[r][c];
     const flicker = flickerCountGrid[r][c];
@@ -618,6 +647,7 @@ function applyPatternData(data) {
     if (data.currentColor) {
         colorPicker.value = data.currentColor;
         currentColor = data.currentColor;
+        currentPhase = getPhaseFromColor(currentColor);
     }
 
     const rowCount = data.rows || data.pattern.length;
@@ -635,9 +665,9 @@ function applyPatternData(data) {
             if (gr >= 0 && gr < rows && gc >= 0 && gc < cols) {
                 grid[gr][gc] = val;
                 if (data.colors && data.colors[r] && data.colors[r][c]) {
-                    colorGrid[gr][gc] = data.colors[r][c];
+                    colorGrid[gr][gc] = getPhaseFromColor(data.colors[r][c]);
                 } else if (val === 1) {
-                    colorGrid[gr][gc] = currentColor;
+                    colorGrid[gr][gc] = currentPhase;
                 }
             }
         }
@@ -653,7 +683,7 @@ function applyPatternData(data) {
 function applyTool(r, c) {
     if (tool === 'brush') {
         grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
+        colorGrid[r][c] = currentPhase;
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
@@ -661,9 +691,9 @@ function applyTool(r, c) {
         emergentGrid[r][c] = 0;
     } else if (tool === 'pulse') {
         const len = running ? pulseLength : (parseInt(pulseLengthInput.value) || 1);
-        pulses.push({ r, c, remaining: len * 2, color: currentColor });
+        pulses.push({ r, c, remaining: len * 2, color: currentPhase });
         grid[r][c] = 1; // Ensure the pulse cell is active immediately
-        colorGrid[r][c] = currentColor;
+        colorGrid[r][c] = currentPhase;
         foldGrid[r][c] = 0;
         lastStateGrid[r][c] = 1;
         flickerCountGrid[r][c] = 0;
@@ -677,7 +707,7 @@ function applyTool(r, c) {
                 const nc = c + dc;
                 if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
                     grid[nr][nc] = 1;
-                    colorGrid[nr][nc] = currentColor;
+                    colorGrid[nr][nc] = currentPhase;
                     foldGrid[nr][nc] = 0;
                     lastStateGrid[nr][nc] = 1;
                     flickerCountGrid[nr][nc] = 0;
@@ -835,7 +865,7 @@ function randomizeGrid() {
     for (let i = 0; i < fillCount; i++) {
         const [r, c] = cells[i];
         grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
+        colorGrid[r][c] = currentPhase;
     }
     drawGrid();
     hideNovaInfoBoxes();
@@ -867,7 +897,7 @@ function triggerBigBang(tension) {
         const r = Math.max(0, Math.min(rows - 1, centerR + dy));
         const c = Math.max(0, Math.min(cols - 1, centerC + dx));
         grid[r][c] = 0;
-        colorGrid[r][c] = randomColor();
+        colorGrid[r][c] = getPhaseFromColor(randomColor());
         residueGrid[r][c] = Math.floor(Math.random() * 5) + 1;
         if (Math.random() < 0.5) {
             flickerCountGrid[r][c] = Math.floor(Math.random() * 3) + 1;
@@ -918,7 +948,7 @@ function seedSymmetricalBurst(cr, cc) {
         for (let c = cc - 5; c <= cc + 5; c++) {
             if (r >= 0 && r < rows && c >= 0 && c < cols) {
                 grid[r][c] = 1;
-                colorGrid[r][c] = currentColor;
+                colorGrid[r][c] = currentPhase;
             }
         }
     }
@@ -930,7 +960,7 @@ function seedRandomScatter(_cr, _cc, density = 0.05) {
         const r = Math.floor(Math.random() * rows);
         const c = Math.floor(Math.random() * cols);
         grid[r][c] = 1;
-        colorGrid[r][c] = currentColor;
+        colorGrid[r][c] = currentPhase;
     }
 }
 
@@ -943,7 +973,7 @@ function seedPerlinCluster(cr, cc, scale = 0.5) {
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (Math.sin(dist * scale) > 0.5) {
                     grid[r][c] = 1;
-                    colorGrid[r][c] = currentColor;
+                    colorGrid[r][c] = currentPhase;
                 }
             }
         }
@@ -958,7 +988,7 @@ function seedRecursiveFractals(cr, cc, depth = 3) {
             const c = cc + dc;
             if (r >= 0 && r < rows && c >= 0 && c < cols) {
                 grid[r][c] = 1;
-                colorGrid[r][c] = currentColor;
+                colorGrid[r][c] = currentPhase;
             }
         }
     }
@@ -981,7 +1011,7 @@ function loadPatternFromMemory(cr, cc) {
                 const nc = cc + c - 1;
                 if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
                     grid[nr][nc] = 1;
-                    colorGrid[nr][nc] = currentColor;
+                    colorGrid[nr][nc] = currentPhase;
                 }
             }
         }
@@ -1120,7 +1150,7 @@ function triggerInfoNova() {
                 const cells = generateNovaPattern(originR, originC, tensionValue, pulseLength);
                 cells.forEach(({ r, c, state, color }) => {
                     grid[r][c] = state;
-                    colorGrid[r][c] = color;
+                    colorGrid[r][c] = getPhaseFromColor(color);
                 });
                 break; }
             case 'chaotic':
@@ -1228,6 +1258,7 @@ function init() {
         resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
     }
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
+    currentPhase = getPhaseFromColor(currentColor);
     showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
@@ -1277,7 +1308,8 @@ toolSelect.addEventListener('change', () => {
 
 colorPicker.addEventListener('input', () => {
     currentColor = colorPicker.value;
-    applyColorToGrid(currentColor);
+    currentPhase = getPhaseFromColor(currentColor);
+    applyColorToGrid(currentPhase);
     drawGrid();
 });
 
@@ -1528,4 +1560,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase, getPhaseFromColor };

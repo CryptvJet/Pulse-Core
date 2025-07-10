@@ -1,4 +1,4 @@
-import { getColorFromPhase, getHueFromPhase, getValueFromPhase } from '../public/app.js';
+import { getColorFromPhase, getHueFromPhase, getValueFromPhase, getPhaseFromColor } from '../public/app.js';
 
 test('phase 0 maps to red', () => {
     expect(getColorFromPhase(0)).toBe('hsl(0, 100%, 50%)');
@@ -20,4 +20,9 @@ test('getHueFromPhase mirrors getColorFromPhase', () => {
 test('getValueFromPhase converts to grayscale', () => {
     expect(getValueFromPhase(0)).toBe('rgb(0, 0, 0)');
     expect(getValueFromPhase(1)).toBe('rgb(255, 255, 255)');
+});
+
+test('getPhaseFromColor converts RGB hex to phase', () => {
+    expect(getPhaseFromColor('#ff0000')).toBe(0);
+    expect(getPhaseFromColor('#00ffff')).toBe(1);
 });
