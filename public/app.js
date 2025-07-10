@@ -1113,7 +1113,7 @@ function triggerInfoNova() {
         drawGrid();
         latestNovaCenters.forEach(showNovaInfo);
         if (novaOverlay) {
-            novaOverlay.textContent = 'Choose Timeline';
+            novaOverlay.textContent = 'Choose Data Nova';
             novaOverlay.classList.add('prompt', 'show');
         }
         const handler = (e) => {
