@@ -257,6 +257,18 @@ function invertHexColor(hex) {
     return { r, g, b };
 }
 
+// Tint a hex color toward black based on a phase value [0,1]
+function tintHexColor(hex, phase) {
+    if (hex[0] === '#') hex = hex.slice(1);
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const nr = Math.round(r * phase);
+    const ng = Math.round(g * phase);
+    const nb = Math.round(b * phase);
+    return `rgb(${nr}, ${ng}, ${nb})`;
+}
+
 function getHueFromPhase(phase) {
     const hue = phase * 180;
     return `hsl(${hue}, 100%, 50%)`;
@@ -310,7 +322,10 @@ function drawGrid() {
             const phase = getPhaseForCell(r, c);
             const resonanceLevel = getResonanceLevel(phase);
 
-            ctx.fillStyle = getValueFromPhase(phase);
+            const baseColor = showPhaseColor
+                ? getValueFromPhase(phase)
+                : tintHexColor(colorGrid[r][c], phase);
+            ctx.fillStyle = baseColor;
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (showPhaseColor) {
@@ -1541,4 +1556,4 @@ if (hardResetBtn) {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase, getResonanceLevel };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getValueFromPhase, getResonanceLevel };
