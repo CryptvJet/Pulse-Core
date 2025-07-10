@@ -7,6 +7,7 @@ const PULSE_UNIT = 2000; // adjust empirically if needed
 const MAX_RESIDUE = 10;
 // Number of harmonic tiers used to bucket phase values
 const harmonicCount = 8;
+const baseFreq = 220;
 // Basic pulse simulation grid
 // Each cell toggles between 0 and 1.
 // Folding logic will hook into update() using the foldSlider value.
@@ -43,6 +44,7 @@ const debugCheckbox = document.getElementById('debugOverlay');
 const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const pulseFlashCheckbox = document.getElementById('pulseFlash');
 const phaseColorToggle = document.getElementById('phaseColorToggle');
+const soundToggle = document.getElementById('soundToggle');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
 const patternSaverButton = document.getElementById('patternSaverButton');
@@ -97,6 +99,8 @@ let maxDimension = resolutionSlider ? parseInt(resolutionSlider.value) : 500;
 
 let pulseFlash = true;
 let showPhaseColor = false;
+let enableSound = false;
+let audioCtx = null;
 let lastFrameTime = performance.now();
 let startTime = null;
 let timeElapsed = 0;
@@ -303,6 +307,20 @@ function getResonanceLevel(phase) {
     return Math.min(harmonicCount - 1, Math.floor(phase * harmonicCount));
 }
 
+function playPulseTone(freq, duration = 0.1) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
 function drawGrid() {
     // Ensure the phase color toggle reflects the current checkbox state
     if (phaseColorToggle) {
@@ -329,15 +347,7 @@ function drawGrid() {
             ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
 
             if (showPhaseColor) {
-                const tierHueOffset = resonanceLevel * 30;
-                let overlay = `hsl(${tierHueOffset}, 100%, 60%)`;
-                if (folded === 1) {
-                    overlay = 'hsl(0, 0%, 10%)';
-                }
-                if (running && pulseFlash && flicker > 0 && cellVal === 1) {
-                    overlay = '#000';
-                }
-                ctx.fillStyle = overlay;
+                ctx.fillStyle = getHueFromPhase(phase);
                 ctx.fillRect(c * cellSize + offsetX, r * cellSize + offsetY, drawSize, drawSize);
             }
 
@@ -499,6 +509,7 @@ function update() {
             const emergentRow = [];
             for (let c = 0; c < cols; c++) {
                 const n = getNeighborsSum(grid, r, c);
+                const phase = getPhaseForCell(r, c);
                 const { val, folded, emergent } = updateCellState({
                     grid,
                     residueGrid,
@@ -521,6 +532,10 @@ function update() {
                 row.push(val);
                 foldRow.push(folded ? 1 : 0);
                 emergentRow.push(emergent ? 1 : 0);
+                if (enableSound && emergent) {
+                    const freq = 220 + phase * 880;
+                    playPulseTone(freq);
+                }
             }
             next.push(row);
             nextFold.push(foldRow);
@@ -1257,6 +1272,10 @@ function init() {
     }
     pulseFlash = pulseFlashCheckbox ? pulseFlashCheckbox.checked : true;
     showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
+    enableSound = soundToggle ? soundToggle.checked : false;
+    if (enableSound && !audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
     unlockGenesisPhase();
@@ -1385,6 +1404,15 @@ if (phaseColorToggle) {
     phaseColorToggle.addEventListener('change', () => {
         showPhaseColor = phaseColorToggle.checked;
         drawGrid();
+    });
+}
+
+if (soundToggle) {
+    soundToggle.addEventListener('change', () => {
+        enableSound = soundToggle.checked;
+        if (enableSound && !audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
     });
 }
 
