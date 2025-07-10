@@ -285,6 +285,10 @@ function getPhaseForCell(r, c) {
 }
 
 function drawGrid() {
+    // Ensure the phase color toggle reflects the current checkbox state
+    if (phaseColorToggle) {
+        showPhaseColor = phaseColorToggle.checked;
+    }
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${Math.max(cellSize - 2, 8)}px monospace`;
