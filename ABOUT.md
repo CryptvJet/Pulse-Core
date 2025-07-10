@@ -8,7 +8,7 @@ Pulse-Core is a browser-based sandbox that lets you play with a simple pulse sim
 - **Start/Stop controls** – Start, stop and step backward through pulses with dedicated buttons.
 - **Adjustable behavior** – Tune pulse length, folding threshold and neighbor count while the simulation is running.
 - **Multiple tools** – Brush, pulse injector and pattern stamper let you build and experiment with different configurations. Right-click cells to erase.
-- **Color picker and flash** – Choose a color for new cells and optionally flash between pulses.
+- **Color picker** – Choose a color for new cells.
 - **Pattern saving** – Save the entire grid to a JSON file for offline use and reload it later.
 - **Debug and grid options** – Toggle a numeric overlay or hide grid lines to change the display.
 
