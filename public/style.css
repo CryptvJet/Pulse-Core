@@ -24,6 +24,15 @@ body {
     display: block;
 }
 
+/*
+ * Ensure collapsible sections inside the controls menu can be hidden.
+ * Without this override, the display:block rule above prevents the
+ * generic `.sectionContent.collapsed` style from taking effect.
+ */
+#controls .sectionContent.collapsed {
+    display: none;
+}
+
 #controlButtons,
 #pulseRow,
 #genesisRow {
