@@ -10,4 +10,5 @@ yarn-debug.log*
 
 # Build output
 /dist/
+db_config.php
 
