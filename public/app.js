@@ -30,7 +30,6 @@ const pulseCounterSpan = document.getElementById('pulseCounter');
 const pulseCounterTopSpan = document.getElementById('pulseCounterTop');
 const stateLabel = document.getElementById('stateLabel');
 const tensionValueSpan = document.getElementById('tensionValue');
-const frameDurationSpan = document.getElementById('frameDuration');
 const frameComplexitySpan = document.getElementById('frameComplexity');
 const pulseEnergySpan = document.getElementById('pulseEnergy');
 const collapseThresholdInput = document.getElementById('collapseThreshold');
@@ -101,7 +100,6 @@ let showPhaseColor = false;
 let phaseMode = 'color';
 let enableSound = false;
 let audioCtx = null;
-let lastFrameTime = performance.now();
 let startTime = null;
 let timeElapsed = 0;
 let prevGrid = [];
@@ -522,7 +520,6 @@ function update() {
     const now = performance.now();
     if (pulseCounter === 0) {
         startTime = now;
-        lastFrameTime = now;
         accumulatedEnergy = 0;
         timeElapsed = 0;
         pulseCounter = 1;
@@ -532,14 +529,11 @@ function update() {
         stateLabel.textContent = 'State: Pulsing';
         stateLabel.classList.add('pulse-start');
         setTimeout(() => stateLabel.classList.remove('pulse-start'), 300);
-        frameDurationSpan.textContent = '0';
         frameComplexitySpan.textContent = '0';
         pulseEnergySpan.textContent = '0';
         drawGrid();
         return;
     }
-    const frameDuration = now - lastFrameTime;
-    lastFrameTime = now;
     const collapseLimit = parseInt(foldSlider.value);
     const harmonyRatio = neighborThreshold / 8;
     if (reverse) {
@@ -636,10 +630,9 @@ function update() {
     activeCellCount = countActiveCells(grid);
     tensionValueSpan.textContent = activeCellCount;
     const complexity = countCellChanges(prevGrid, grid);
-    const energyThisFrame = complexity * (frameDuration / 16);
+    const energyThisFrame = complexity;
     accumulatedEnergy += energyThisFrame;
     timeElapsed = now - startTime;
-    frameDurationSpan.textContent = Math.round(frameDuration);
     frameComplexitySpan.textContent = complexity;
     pulseEnergySpan.textContent = Math.round(accumulatedEnergy);
     prevGrid = copyGrid(grid);
@@ -849,11 +842,9 @@ function start() {
     stateLabel.classList.remove('pulse-start');
     pulseLength = parseInt(pulseLengthInput.value);
     pulseLengthInput.disabled = true;
-    lastFrameTime = performance.now();
     accumulatedEnergy = 0;
     prevGrid = copyGrid(grid);
     lastStateGrid = copyGrid(grid);
-    frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';
     const speed = parseInt(frameRateSlider.value);
@@ -885,7 +876,6 @@ function clearGrid(resetStats = true) {
     if (resetStats) {
         pulseCounterSpan.textContent = pulseCounter;
         if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
-        frameDurationSpan.textContent = '0';
         frameComplexitySpan.textContent = '0';
         pulseEnergySpan.textContent = '0';
     }
@@ -905,7 +895,6 @@ function randomizeGrid() {
     pulseCounterSpan.textContent = pulseCounter;
     if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
     stateLabel.textContent = 'State: Pre-Pulse';
-    frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';
 
@@ -1331,7 +1320,6 @@ function init() {
     showGridLines = gridLinesToggle ? gridLinesToggle.checked : true;
     drawGrid();
     unlockGenesisPhase();
-    frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
     pulseEnergySpan.textContent = '0';
     patternLabel.style.display = 'none';
