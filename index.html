@@ -40,6 +40,7 @@
             <div id="pulseCounterDisplay">Frame: <span id="pulseCounter">0</span></div>
             <button id="reverseBtn">Reverse</button>
         </div>
+        <label>Frame Rate: <input type="range" id="frameRateSlider" min="50" max="1000" step="50" value="500"></label>
         </div>
         </div>
         <div class="section">
@@ -49,10 +50,7 @@
         <div>Complexity: <span id="frameComplexity">0</span></div>
         <div>Pulse Energy: <span id="pulseEnergy">0</span></div>
         <div id="tensionDisplay">Tension: <span id="tensionValue">0</span></div>
-        <label>Frame Rate: <input type="range" id="frameRateSlider" min="50" max="1000" step="50" value="500"></label>
         <label>Collapse Threshold (Pulse Units) <span title="Total pulse energy that collapses the grid.">ℹ️</span>: <input type="number" id="collapseThreshold" value="1" step="0.001"></label>
-        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
-        <label>Resolution Limit: <input type="range" id="resolutionSlider" min="250" max="2000" step="50" value="500"><span id="resolutionWarning" class="warning" style="display:none;margin-left:4px;">⚠️ High resolution may impact performance</span></label>
         <label>Fold Threshold <span title="Number of flickers needed to trigger a collapse.">ℹ️</span>:
             <span id="foldValue">2</span>
             <input type="range" id="foldSlider" min="0" max="10" step="1" value="2">
@@ -89,6 +87,8 @@
         <label><input type="checkbox" id="soundToggle"> Enable Sound</label>
         <label><input type="checkbox" id="gridLinesToggle" checked> Grid Lines</label>
         <label><input type="checkbox" id="centerViewToggle"> Center View</label>
+        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
+        <label>Resolution Limit: <input type="range" id="resolutionSlider" min="250" max="2000" step="50" value="500"><span id="resolutionWarning" class="warning" style="display:none;margin-left:4px;">⚠️ High resolution may impact performance</span></label>
         </div>
         </div>
     </div>
@@ -137,7 +137,7 @@
         <h2>About Pulse-Core</h2>
         <p>Pulse-Core is a browser-based sandbox for experimenting with a simple pulse simulation. Cells flip on and off based on neighbor counts and optional folding logic. Draw patterns, inject pulses and watch the results in real time.</p>
         <ul>
-            <li>Dynamic grid adapts with the zoom slider (capped at 500×500 cells).</li>
+            <li>Dynamic grid adapts with the zoom slider. The Resolution Limit slider caps the grid between 250 and 2000 cells per side.</li>
             <li>Start/Stop controls with reverse stepping.</li>
             <li>Adjust pulse length, folding threshold and neighbor count while running.</li>
             <li>Brush, pulse injector and pattern stamper tools. Right-click any cell to erase.</li>
