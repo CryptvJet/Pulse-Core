@@ -34,11 +34,16 @@ $requiredFields = [
     'potential_threshold',
     'potential_decay',
     'phase_mode',
-    'field_mapping'
+    'field_mapping',
+    'parent_hash'
 ];
 
 foreach ($requiredFields as $field) {
     if (!isset($data[$field])) {
+        if ($field === 'parent_hash') {
+            $data[$field] = null;
+            continue;
+        }
         http_response_code(400);
         echo json_encode(['error' => "Missing field: $field"]);
         exit;
@@ -73,7 +78,8 @@ try {
         potential_decay FLOAT,
         phase_mode VARCHAR(50),
         field_mapping VARCHAR(50),
-        nova_hash VARCHAR(16)
+        nova_hash VARCHAR(16),
+        parent_hash VARCHAR(10)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
     $stmt = $pdo->prepare("INSERT INTO nova_events (
@@ -81,8 +87,8 @@ try {
         tension, center_row, center_col, genesis_mode, pulse_length,
         neighbor_threshold, collapse_threshold, fold_threshold,
         potential_threshold, potential_decay, phase_mode, field_mapping,
-        nova_hash
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        nova_hash, parent_hash
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $dt = new DateTime($data['timestamp']);
     $dt->setTimezone(new DateTimeZone('UTC'));
@@ -90,6 +96,7 @@ try {
     $timeOfDay = $dt->format('H:i:s');
 
     $inserted = 0;
+    $hashes = [];
     foreach ($data['nova_centers'] as $center) {
         if (!is_array($center) || count($center) != 2) {
             continue;
@@ -117,12 +124,14 @@ try {
             (float)$data['potential_decay'],
             $data['phase_mode'],
             $data['field_mapping'],
-            $novaHash
+            $novaHash,
+            $data['parent_hash']
         ]);
         $inserted++;
+        $hashes[] = $novaHash;
     }
 
-    echo json_encode(['status' => 'success', 'inserted' => $inserted]);
+    echo json_encode(['status' => 'success', 'inserted' => $inserted, 'hashes' => $hashes]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error']);
