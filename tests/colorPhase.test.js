@@ -1,4 +1,4 @@
-import { getColorFromPhase, getHueFromPhase, getValueFromPhase, tintHexColor, getPhaseColor } from '../public/app.js';
+import { getColorFromPhase, getHueFromPhase, getValueFromPhase, tintHexColor, getPhaseColor, setPhaseMode } from '../public/app.js';
 
 test('phase 0 maps to red', () => {
     expect(getColorFromPhase(0)).toBe('hsl(0, 100%, 50%)');
@@ -32,4 +32,10 @@ test('tintHexColor returns original color at phase 1', () => {
 
 test('getPhaseColor returns hue in color mode', () => {
     expect(getPhaseColor(0)).toBe('hsl(0, 100%, 50%)');
+});
+
+test('getPhaseColor returns grayscale in grayscale mode', () => {
+    setPhaseMode('grayscale');
+    expect(getPhaseColor(0.5)).toBe('rgb(127, 127, 127)');
+    setPhaseMode('color');
 });

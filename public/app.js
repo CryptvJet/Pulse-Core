@@ -41,6 +41,8 @@ const potentialDecayInput = document.getElementById('potentialDecay');
 const debugCheckbox = document.getElementById('debugOverlay');
 const fieldTensionDropdown = document.getElementById('fieldTensionMode');
 const phaseColorToggle = document.getElementById('phaseColorToggle');
+const phaseModeControls = document.getElementById('phaseModeControls');
+const phaseModeSelect = document.getElementById('phaseMode');
 const soundToggle = document.getElementById('soundToggle');
 const patternLoader = document.getElementById('patternLoader');
 const patternUploadBtn = document.getElementById('patternUploadBtn');
@@ -462,6 +464,14 @@ function drawFieldTensionOverlay(mode) {
 function clearFieldOverlay() {
     // Simply redraw the grid without any overlay
     // Overlay will be omitted if mode is 'none'
+}
+
+function setPhaseMode(mode) {
+    phaseMode = mode;
+    if (phaseModeSelect) {
+        phaseModeSelect.value = mode;
+    }
+    drawGrid();
 }
 
 function drawPulseBarrierTest31() {
@@ -1313,6 +1323,10 @@ function init() {
         resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
     }
     showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
+    if (phaseModeControls) {
+        phaseModeControls.style.display = showPhaseColor ? '' : 'none';
+    }
+    phaseMode = phaseModeSelect ? phaseModeSelect.value : 'color';
     enableSound = soundToggle ? soundToggle.checked : false;
     if (enableSound && !audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1439,14 +1453,16 @@ if (postPhaseToggle) {
 if (phaseColorToggle) {
     phaseColorToggle.addEventListener('change', () => {
         showPhaseColor = phaseColorToggle.checked;
+        if (phaseModeControls) {
+            phaseModeControls.style.display = showPhaseColor ? '' : 'none';
+        }
         drawGrid();
     });
 }
 
-const phaseModeSelect = document.getElementById('phaseMode');
 if (phaseModeSelect) {
     phaseModeSelect.addEventListener('change', (e) => {
-        phaseMode = e.target.value;
+        setPhaseMode(e.target.value);
     });
 }
 
@@ -1646,4 +1662,4 @@ function setupCollapsibleSections() {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode, sendNovaToServer, lastNovaHash };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, setPhaseMode, phaseMode, sendNovaToServer, lastNovaHash };
