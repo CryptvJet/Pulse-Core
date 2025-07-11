@@ -33,7 +33,11 @@ try {
     $stmt->execute();
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $idx = 1;
+
+    // Determine global index for the first row on this page
+    $countStmt = $pdo->query('SELECT COUNT(*) FROM nova_events');
+    $totalCount = (int)$countStmt->fetchColumn();
+    $idx = $totalCount - $offset;
     function showField($val) {
         if ($val === null || $val === '' || $val == 0) {
             return 'Missing';
@@ -42,8 +46,9 @@ try {
     }
 
     foreach ($rows as $row) {
-        printf("%03d - %s \xF0\x9F\x94\x91 Nova Hash: %s\n",
-            $idx,
+        $num = str_pad($idx, strlen((string)$totalCount), '0', STR_PAD_LEFT);
+        printf("%s - %s \xF0\x9F\x94\x91 Nova Hash: %s\n",
+            $num,
             htmlspecialchars($row['timestamp']),
             showField($row['nova_hash']));
         echo ' UA: ' . showField($row['user_agent']) . "\n";
@@ -62,7 +67,7 @@ try {
         echo ' Phase Mode: ' . showField($row['phase_mode'])
             . ' | Field Mapping: ' . showField($row['field_mapping']) . "\n";
         echo str_repeat('-', 40) . "\n";
-        $idx++;
+        $idx--;
     }
 
     echo "<div style=\"margin-top:10px\">";
