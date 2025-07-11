@@ -272,7 +272,12 @@ function sendNovaToServer(centers) {
         genesis_mode: genesisSelect ? genesisSelect.value : '',
         pulse_length: parseInt(pulseLengthInput.value, 10) || 0,
         neighbor_threshold: parseInt(neighborSlider.value, 10) || 0,
-        collapse_threshold: parseFloat(collapseThresholdInput.value || '0') * PULSE_UNIT
+        collapse_threshold: parseFloat(collapseThresholdInput.value || '0') * PULSE_UNIT,
+        fold_threshold: parseInt(foldSlider.value, 10) || 0,
+        potential_threshold: potentialThreshold,
+        potential_decay: decayRate,
+        phase_mode: phaseMode,
+        field_mapping: fieldTensionMode
     };
 
     fetch('nova.php', {

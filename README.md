@@ -87,6 +87,18 @@ cp db_config.sample.php db_config.php
 # update db_config.php with your credentials
 ```
 
+If upgrading from an older installation, add the newest columns to your
+`nova_events` table:
+
+```sql
+ALTER TABLE nova_events
+ADD fold_threshold INT,
+ADD potential_threshold FLOAT,
+ADD potential_decay FLOAT,
+ADD phase_mode VARCHAR(50),
+ADD field_mapping VARCHAR(50);
+```
+
 The generated `db_config.php` is ignored by Git so it won't be included in commits.
 
 The project is released under the MIT License (see `LICENSE`).

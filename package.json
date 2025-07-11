@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint public/*.js",
+    "pretest": "npm install",
     "test": "jest"
   },
   "devDependencies": {
