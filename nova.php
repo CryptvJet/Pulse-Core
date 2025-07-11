@@ -3,6 +3,26 @@
 // Accepts POST requests with JSON body and logs nova events
 require_once 'db_config.php';
 
+function log_debug($msg) {
+    file_put_contents(__DIR__ . '/nova_debug.log', $msg . PHP_EOL, FILE_APPEND);
+}
+
+function validateRequest($data, $requiredFields) {
+    $errors = [];
+    foreach ($requiredFields as $field) {
+        if (!isset($data[$field])) {
+            if ($field === 'parent_hash') {
+                continue;
+            }
+            $errors[] = "Missing field: $field";
+        }
+    }
+    if (isset($data['nova_centers']) && !is_array($data['nova_centers'])) {
+        $errors[] = 'Invalid nova_centers';
+    }
+    return $errors;
+}
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -12,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = file_get_contents('php://input');
+log_debug('Payload: ' . $input);
 $data = json_decode($input, true);
 if (!is_array($data)) {
     http_response_code(400);
@@ -38,21 +59,11 @@ $requiredFields = [
     'parent_hash'
 ];
 
-foreach ($requiredFields as $field) {
-    if (!isset($data[$field])) {
-        if ($field === 'parent_hash') {
-            $data[$field] = null;
-            continue;
-        }
-        http_response_code(400);
-        echo json_encode(['error' => "Missing field: $field"]);
-        exit;
-    }
-}
-
-if (!is_array($data['nova_centers'])) {
+$errors = validateRequest($data, $requiredFields);
+if ($errors) {
+    log_debug('Validation error: ' . implode('; ', $errors));
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid nova_centers']);
+    echo json_encode(['error' => $errors[0]]);
     exit;
 }
 
@@ -82,6 +93,7 @@ try {
         parent_hash VARCHAR(10)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    log_debug('Preparing insert statement');
     $stmt = $pdo->prepare("INSERT INTO nova_events (
         timestamp, time_of_day, user_agent, complexity, pulse_energy,
         tension, center_row, center_col, genesis_mode, pulse_length,
@@ -106,7 +118,7 @@ try {
         $eventData['center_row'] = (int)$row;
         $eventData['center_col'] = (int)$col;
         $novaHash = substr(md5(json_encode($eventData)), 0, 8);
-        $stmt->execute([
+        $success = $stmt->execute([
             $timestamp,
             $timeOfDay,
             $data['user_agent'],
@@ -127,12 +139,18 @@ try {
             $novaHash,
             $data['parent_hash']
         ]);
+        if (!$success) {
+            log_debug('Insert failed: ' . json_encode($stmt->errorInfo()));
+        } else {
+            log_debug('Inserted hash: ' . $novaHash);
+        }
         $inserted++;
         $hashes[] = $novaHash;
     }
 
     echo json_encode(['status' => 'success', 'inserted' => $inserted, 'hashes' => $hashes]);
 } catch (Exception $e) {
+    log_debug('Exception: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Database error']);
 }
