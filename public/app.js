@@ -276,7 +276,7 @@ function sendNovaToServer(centers) {
         fold_threshold: parseInt(foldSlider.value, 10),
         potential_threshold: parseFloat(potentialThreshold),
         potential_decay: parseFloat(decayRate),
-        phase_mode: phaseMode,
+        phase_mode: showPhaseColor ? phaseMode : 'off',
         field_mapping: fieldTensionMode
     };
 
@@ -1317,6 +1317,8 @@ function init() {
         resolutionWarning.style.display = maxDimension > 800 ? 'inline' : 'none';
     }
     showPhaseColor = phaseColorToggle ? phaseColorToggle.checked : false;
+    const phaseModeSelect = document.getElementById('phaseMode');
+    phaseMode = phaseModeSelect ? phaseModeSelect.value : 'color';
     enableSound = soundToggle ? soundToggle.checked : false;
     if (enableSound && !audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
