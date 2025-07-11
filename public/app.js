@@ -259,6 +259,32 @@ function countCellChanges(prev, curr) {
     return changes;
 }
 
+// Send nova event details to the backend logger
+function sendNovaToServer(centers) {
+    const data = {
+        timestamp: new Date().toISOString(),
+        user_agent: navigator.userAgent,
+        frame_duration: parseInt(frameDurationSpan.textContent, 10) || 0,
+        complexity: parseInt(frameComplexitySpan.textContent, 10) || 0,
+        pulse_energy: parseFloat(pulseEnergySpan.textContent) || 0,
+        tension: parseInt(tensionValueSpan.textContent, 10) || 0,
+        nova_centers: centers,
+        genesis_mode: genesisSelect ? genesisSelect.value : '',
+        pulse_length: parseInt(pulseLengthInput.value, 10) || 0,
+        neighbor_threshold: parseInt(neighborSlider.value, 10) || 0,
+        collapse_threshold: parseFloat(collapseThresholdInput.value || '0') * PULSE_UNIT
+    };
+
+    fetch('nova.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+        .then(resp => resp.json())
+        .then(resp => console.log(resp))
+        .catch(err => console.error('nova.php error', err));
+}
+
 function invertHexColor(hex) {
     if (hex[0] === "#") hex = hex.slice(1);
     const r = 255 - parseInt(hex.substring(0, 2), 16);
@@ -1162,6 +1188,7 @@ function triggerInfoNova() {
     performNovaSequence();
 
     function performNovaSequence() {
+        sendNovaToServer(latestNovaCenters);
         hideNovaInfoBoxes();
         clearGrid(false);
         if (novaOverlay) {
@@ -1613,4 +1640,4 @@ function setupCollapsibleSections() {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode, sendNovaToServer };
