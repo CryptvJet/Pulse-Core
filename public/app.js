@@ -27,6 +27,7 @@ const patternSelect = document.getElementById('patternSelect');
 const patternLabel = document.getElementById('patternLabel');
 const colorPicker = document.getElementById('colorPicker');
 const pulseCounterSpan = document.getElementById('pulseCounter');
+const pulseCounterTopSpan = document.getElementById('pulseCounterTop');
 const stateLabel = document.getElementById('stateLabel');
 const tensionValueSpan = document.getElementById('tensionValue');
 const frameDurationSpan = document.getElementById('frameDuration');
@@ -521,6 +522,7 @@ function update() {
         pulseCounter = 1;
         lockGenesisPhase();
         pulseCounterSpan.textContent = pulseCounter;
+        if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
         stateLabel.textContent = 'State: Pulsing';
         stateLabel.classList.add('pulse-start');
         setTimeout(() => stateLabel.classList.remove('pulse-start'), 300);
@@ -623,6 +625,7 @@ function update() {
     }
     drawGrid();
     pulseCounterSpan.textContent = pulseCounter;
+    if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
     stateLabel.textContent = 'State: Pulsing';
     activeCellCount = countActiveCells(grid);
     tensionValueSpan.textContent = activeCellCount;
@@ -733,6 +736,7 @@ function applyPatternData(data) {
 
     pulseCounter = data.pulse || 0;
     pulseCounterSpan.textContent = pulseCounter;
+    if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
     stateLabel.textContent = pulseCounter === 0 ? 'State: Pre-Pulse' : 'State: Pulsing';
     drawGrid();
 }
@@ -874,6 +878,7 @@ function clearGrid(resetStats = true) {
     stateLabel.textContent = 'State: Pre-Pulse';
     if (resetStats) {
         pulseCounterSpan.textContent = pulseCounter;
+        if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
         frameDurationSpan.textContent = '0';
         frameComplexitySpan.textContent = '0';
         pulseEnergySpan.textContent = '0';
@@ -892,6 +897,7 @@ function randomizeGrid() {
     timeElapsed = 0;
     pulseCounter = 0;
     pulseCounterSpan.textContent = pulseCounter;
+    if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
     stateLabel.textContent = 'State: Pre-Pulse';
     frameDurationSpan.textContent = '0';
     frameComplexitySpan.textContent = '0';
@@ -1324,6 +1330,7 @@ function init() {
     pulseEnergySpan.textContent = '0';
     patternLabel.style.display = 'none';
     pulseCounterSpan.textContent = pulseCounter;
+    if (pulseCounterTopSpan) pulseCounterTopSpan.textContent = pulseCounter;
     stateLabel.textContent = 'State: Pre-Pulse';
     reverseBtn.textContent = 'Reverse';
     neighborThreshold = parseInt(neighborSlider.value);
