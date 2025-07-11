@@ -15,6 +15,9 @@ header('Content-Type: text/html; charset=utf-8');
 <body>
 <?php
 try {
+    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $limit = 100;
+    $offset = ($page - 1) * $limit;
     $stmt = $pdo->prepare(
         "SELECT timestamp, user_agent, genesis_mode, frame_duration, complexity,
                 pulse_energy, tension, center_row, center_col, pulse_length,
@@ -23,10 +26,13 @@ try {
                 nova_hash
          FROM nova_events
          ORDER BY timestamp DESC
-         LIMIT 100"
+         LIMIT :limit OFFSET :offset"
     );
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
 
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $idx = 1;
     function showField($val) {
         if ($val === null || $val === '' || $val == 0) {
@@ -35,7 +41,7 @@ try {
         return htmlspecialchars($val);
     }
 
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    foreach ($rows as $row) {
         printf("%03d - %s \xF0\x9F\x94\x91 Nova Hash: %s\n",
             $idx,
             htmlspecialchars($row['timestamp']),
@@ -58,6 +64,17 @@ try {
         echo str_repeat('-', 40) . "\n";
         $idx++;
     }
+
+    echo "<div style=\"margin-top:10px\">";
+    if ($page > 1) {
+        $prev = $page - 1;
+        echo "<a href=\"?page=$prev\">&laquo; Previous 100</a> ";
+    }
+    if (count($rows) === $limit) {
+        $next = $page + 1;
+        echo "<a href=\"?page=$next\">Next 100 &raquo;</a>";
+    }
+    echo "</div>";
 } catch (Exception $e) {
     echo "Error retrieving nova data.";
 }
