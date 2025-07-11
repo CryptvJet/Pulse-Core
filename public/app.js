@@ -265,7 +265,6 @@ function sendNovaToServer(centers) {
     const data = {
         timestamp: new Date().toISOString(),
         user_agent: navigator.userAgent,
-        frame_duration: parseInt(frameDurationSpan.textContent, 10) || 0,
         complexity: parseInt(frameComplexitySpan.textContent, 10) || 0,
         pulse_energy: parseFloat(pulseEnergySpan.textContent) || 0,
         tension: parseInt(tensionValueSpan.textContent, 10) || 0,

@@ -100,6 +100,12 @@ ADD field_mapping VARCHAR(50),
 ADD nova_hash VARCHAR(16);
 ```
 
+To remove the deprecated `frame_duration` column, run:
+
+```sql
+ALTER TABLE nova_events DROP COLUMN frame_duration;
+```
+
 The generated `db_config.php` is ignored by Git so it won't be included in commits.
 
 The project is released under the MIT License (see `LICENSE`).

@@ -7,7 +7,7 @@ $after = isset($_GET['after']) ? intval($_GET['after']) : 0;
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, timestamp, user_agent, genesis_mode, frame_duration, complexity,
+        "SELECT id, timestamp, user_agent, genesis_mode, complexity,
                 pulse_energy, tension, center_row, center_col, pulse_length,
                 neighbor_threshold, collapse_threshold, fold_threshold,
                 potential_threshold, potential_decay, phase_mode, field_mapping,
