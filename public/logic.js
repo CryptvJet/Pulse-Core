@@ -29,6 +29,7 @@ export function updateCellState(params) {
         lastStateGrid,
         flickerCountGrid,
         potentialGrid,
+        foldGrid,
         r,
         c,
         n,
@@ -37,6 +38,13 @@ export function updateCellState(params) {
         potentialThreshold,
         decayRate
     } = params;
+
+    if (foldGrid && foldGrid[r][c]) {
+        lastStateGrid[r][c] = 0;
+        flickerCountGrid[r][c] = 0;
+        potentialGrid[r][c] = 0;
+        return { val: 0, folded: true, emergent: false };
+    }
 
     const flickerCount = flickerCountGrid[r][c];
     const cap = getResonanceCap(r, c, grid.length, grid[0].length);
