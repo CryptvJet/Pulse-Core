@@ -2,6 +2,8 @@
 require_once 'db_config.php';
 
 header('Content-Type: text/html; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -118,7 +120,9 @@ try {
         return text;
     }
     function fetchUpdates() {
-        fetch('nova-events.php?after=' + latestId)
+        fetch('nova-events.php?after=' + latestId + '&_=' + Date.now(), {
+            cache: 'no-store'
+        })
             .then(r => r.json())
             .then(rows => {
                 rows.forEach(row => {
