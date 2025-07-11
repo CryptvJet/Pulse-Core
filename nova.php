@@ -1,0 +1,112 @@
+<?php
+// PulseCore backend logging endpoint
+// Accepts POST requests with JSON body and logs nova events
+
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid request method']);
+    exit;
+}
+
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
+$requiredFields = [
+    'timestamp',
+    'user_agent',
+    'frame_duration',
+    'complexity',
+    'pulse_energy',
+    'tension',
+    'nova_centers',
+    'genesis_mode',
+    'pulse_length',
+    'neighbor_threshold',
+    'collapse_threshold'
+];
+
+foreach ($requiredFields as $field) {
+    if (!isset($data[$field])) {
+        http_response_code(400);
+        echo json_encode(['error' => "Missing field: $field"]);
+        exit;
+    }
+}
+
+if (!is_array($data['nova_centers'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid nova_centers']);
+    exit;
+}
+
+try {
+    $pdo = new PDO('mysql:host=localhost;dbname=pulsecore', 'root', '');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Create table if it doesn't exist
+    $pdo->exec("CREATE TABLE IF NOT EXISTS nova_events (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        timestamp DATETIME,
+        time_of_day VARCHAR(8),
+        user_agent TEXT,
+        frame_duration INT,
+        complexity INT,
+        pulse_energy FLOAT,
+        tension INT,
+        center_row INT,
+        center_col INT,
+        genesis_mode VARCHAR(32),
+        pulse_length INT,
+        neighbor_threshold INT,
+        collapse_threshold FLOAT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $stmt = $pdo->prepare("INSERT INTO nova_events (
+        timestamp, time_of_day, user_agent, frame_duration, complexity, pulse_energy,
+        tension, center_row, center_col, genesis_mode, pulse_length,
+        neighbor_threshold, collapse_threshold
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+    $dt = new DateTime($data['timestamp']);
+    $dt->setTimezone(new DateTimeZone('UTC'));
+    $timestamp = $dt->format('Y-m-d H:i:s');
+    $timeOfDay = $dt->format('H:i:s');
+
+    $inserted = 0;
+    foreach ($data['nova_centers'] as $center) {
+        if (!is_array($center) || count($center) != 2) {
+            continue;
+        }
+        [$row, $col] = $center;
+        $stmt->execute([
+            $timestamp,
+            $timeOfDay,
+            $data['user_agent'],
+            (int)$data['frame_duration'],
+            (int)$data['complexity'],
+            (float)$data['pulse_energy'],
+            (int)$data['tension'],
+            (int)$row,
+            (int)$col,
+            $data['genesis_mode'],
+            (int)$data['pulse_length'],
+            (int)$data['neighbor_threshold'],
+            (float)$data['collapse_threshold']
+        ]);
+        $inserted++;
+    }
+
+    echo json_encode(['status' => 'success', 'inserted' => $inserted]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error']);
+}
+
+?>
