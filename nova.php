@@ -1,6 +1,7 @@
 <?php
 // PulseCore backend logging endpoint
 // Accepts POST requests with JSON body and logs nova events
+require_once 'db_config.php';
 
 header('Content-Type: application/json');
 
@@ -47,9 +48,7 @@ if (!is_array($data['nova_centers'])) {
 }
 
 try {
-    $pdo = new PDO('mysql:host=localhost;dbname=pulsecore', 'root', '');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+    // $pdo is provided by db_config.php
     // Create table if it doesn't exist
     $pdo->exec("CREATE TABLE IF NOT EXISTS nova_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
