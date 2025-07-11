@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="public/style.css">
 </head>
 <body>
+    <div id="liveCounters">
+        <div>Frame Duration: <span id="frameDuration">0</span>ms</div>
+        <div>Complexity: <span id="frameComplexity">0</span></div>
+        <div>Pulse Energy: <span id="pulseEnergy">0</span></div>
+        <div id="tensionDisplay">Tension: <span id="tensionValue">0</span></div>
+    </div>
     <button id="menuToggle">Menu</button>
     <div id="slideMenu">
     <div id="controls">
@@ -67,6 +73,8 @@
         <div class="section">
         <h4 class="sectionHeader">🎨 Display & Audio</h4>
         <div class="sectionContent">
+        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
+        <label>Resolution Limit: <input type="range" id="resolutionSlider" min="250" max="2000" step="50" value="500"><span id="resolutionWarning" class="warning" style="display:none;margin-left:4px;">⚠️ High resolution may impact performance</span></label>
         <label><input type="checkbox" id="debugOverlay"> Field Tension Mapping</label>
         <select id="fieldTensionMode" style="margin-top:4px">
             <option value="none" selected>None</option>
@@ -87,8 +95,6 @@
         <label><input type="checkbox" id="soundToggle"> Enable Sound</label>
         <label><input type="checkbox" id="gridLinesToggle" checked> Grid Lines</label>
         <label><input type="checkbox" id="centerViewToggle"> Center View</label>
-        <label>Zoom: <input type="range" id="zoomSlider" min="1" max="50" step="1" value="10" title="Adjust pixel size. Finer detail may require a higher resolution limit."></label>
-        <label>Resolution Limit: <input type="range" id="resolutionSlider" min="250" max="2000" step="50" value="500"><span id="resolutionWarning" class="warning" style="display:none;margin-left:4px;">⚠️ High resolution may impact performance</span></label>
         </div>
         </div>
     </div>

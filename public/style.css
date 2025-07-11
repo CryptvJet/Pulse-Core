@@ -269,3 +269,14 @@ body {
     from { box-shadow: 0 0 6px #fff; }
     to { box-shadow: none; }
 }
+
+#liveCounters {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(34, 34, 34, 0.8);
+    color: #fff;
+    padding: 8px;
+    border-radius: 4px;
+    z-index: 20;
+}
