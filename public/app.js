@@ -108,6 +108,7 @@ let prevGrid = [];
 let accumulatedEnergy = 0;
 let latestNovaCenter = null;
 let latestNovaCenters = [];
+let lastNovaHash = null;
 let genesisMode = 'stable'; // stable | chaotic | organic | fractal | seeded
 let genesisPhase = 'pre'; // pre | post
 let selectionPending = false;
@@ -277,7 +278,8 @@ function sendNovaToServer(centers) {
         potential_threshold: parseFloat(potentialThreshold),
         potential_decay: parseFloat(decayRate),
         phase_mode: phaseMode,
-        field_mapping: fieldTensionMode
+        field_mapping: fieldTensionMode,
+        parent_hash: lastNovaHash || null
     };
 
     fetch('nova.php', {
@@ -286,7 +288,12 @@ function sendNovaToServer(centers) {
         body: JSON.stringify(data)
     })
         .then(resp => resp.json())
-        .then(resp => console.log(resp))
+        .then(resp => {
+            if (resp.hashes && resp.hashes.length) {
+                lastNovaHash = resp.hashes[resp.hashes.length - 1];
+            }
+            console.log(resp);
+        })
         .catch(err => console.error('nova.php error', err));
 }
 
@@ -1651,4 +1658,4 @@ function setupCollapsibleSections() {
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
-export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode, sendNovaToServer };
+export { init, triggerInfoNova, latestNovaCenter, latestNovaCenters, genesisMode, genesisPhase, lockGenesisPhase, showNovaInfo, centerOnNova, repositionNovaInfoBoxes, invertHexColor, tintHexColor, getColorFromPhase, getHueFromPhase, getPhaseColor, getValueFromPhase, getResonanceLevel, phaseMode, sendNovaToServer, lastNovaHash };

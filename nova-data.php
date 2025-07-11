@@ -49,10 +49,13 @@ try {
 
     foreach ($rows as $row) {
         $num = str_pad($idx, strlen((string)$totalCount), '0', STR_PAD_LEFT);
-        printf("%s - %s \xF0\x9F\x94\x91 Nova Hash: %s\n",
+        printf(
+            '%s - %s \xF0\x9F\x94\x91 Nova Hash: <a href="nova-detail.php?hash=%s">%s</a>\n',
             $num,
             htmlspecialchars($row['timestamp']),
-            showField($row['nova_hash']));
+            urlencode($row['nova_hash']),
+            showField($row['nova_hash'])
+        );
         echo ' UA: ' . showField($row['user_agent']) . "\n";
         echo ' Genesis Mode: ' . showField($row['genesis_mode']) . "\n";
         echo ' Complexity: ' . (int)$row['complexity']
@@ -94,7 +97,8 @@ try {
     }
     function formatEntry(row) {
         let text = '';
-        text += String(nextIndex).padStart(3, '0') + ' - ' + row.timestamp + ' \uD83D\uDD11 Nova Hash: ' + showField(row.nova_hash) + '\n';
+        const link = '<a href="nova-detail.php?hash=' + encodeURIComponent(row.nova_hash) + '">' + showField(row.nova_hash) + '</a>';
+        text += String(nextIndex).padStart(3, '0') + ' - ' + row.timestamp + ' \uD83D\uDD11 Nova Hash: ' + link + '\n';
         text += ' UA: ' + showField(row.user_agent) + '\n';
         text += ' Genesis Mode: ' + showField(row.genesis_mode) + '\n';
         text += ' Complexity: ' + parseInt(row.complexity) +

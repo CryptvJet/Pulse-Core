@@ -97,7 +97,8 @@ ADD potential_threshold FLOAT,
 ADD potential_decay FLOAT,
 ADD phase_mode VARCHAR(50),
 ADD field_mapping VARCHAR(50),
-ADD nova_hash VARCHAR(16);
+ADD nova_hash VARCHAR(16),
+ADD parent_hash VARCHAR(10);
 ```
 
 To remove the deprecated `frame_duration` column, run:
