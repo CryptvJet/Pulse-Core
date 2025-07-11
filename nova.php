@@ -74,15 +74,17 @@ try {
         potential_threshold FLOAT,
         potential_decay FLOAT,
         phase_mode VARCHAR(50),
-        field_mapping VARCHAR(50)
+        field_mapping VARCHAR(50),
+        nova_hash VARCHAR(16)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
     $stmt = $pdo->prepare("INSERT INTO nova_events (
         timestamp, time_of_day, user_agent, frame_duration, complexity, pulse_energy,
         tension, center_row, center_col, genesis_mode, pulse_length,
         neighbor_threshold, collapse_threshold, fold_threshold,
-        potential_threshold, potential_decay, phase_mode, field_mapping
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        potential_threshold, potential_decay, phase_mode, field_mapping,
+        nova_hash
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $dt = new DateTime($data['timestamp']);
     $dt->setTimezone(new DateTimeZone('UTC'));
@@ -95,6 +97,10 @@ try {
             continue;
         }
         [$row, $col] = $center;
+        $eventData = $data;
+        $eventData['center_row'] = (int)$row;
+        $eventData['center_col'] = (int)$col;
+        $novaHash = substr(md5(json_encode($eventData)), 0, 8);
         $stmt->execute([
             $timestamp,
             $timeOfDay,
@@ -113,7 +119,8 @@ try {
             (float)$data['potential_threshold'],
             (float)$data['potential_decay'],
             $data['phase_mode'],
-            $data['field_mapping']
+            $data['field_mapping'],
+            $novaHash
         ]);
         $inserted++;
     }
