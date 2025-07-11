@@ -22,7 +22,6 @@ if (!is_array($data)) {
 $requiredFields = [
     'timestamp',
     'user_agent',
-    'frame_duration',
     'complexity',
     'pulse_energy',
     'tension',
@@ -60,7 +59,6 @@ try {
         timestamp DATETIME,
         time_of_day VARCHAR(8),
         user_agent TEXT,
-        frame_duration INT,
         complexity INT,
         pulse_energy FLOAT,
         tension INT,
@@ -79,12 +77,12 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
     $stmt = $pdo->prepare("INSERT INTO nova_events (
-        timestamp, time_of_day, user_agent, frame_duration, complexity, pulse_energy,
+        timestamp, time_of_day, user_agent, complexity, pulse_energy,
         tension, center_row, center_col, genesis_mode, pulse_length,
         neighbor_threshold, collapse_threshold, fold_threshold,
         potential_threshold, potential_decay, phase_mode, field_mapping,
         nova_hash
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $dt = new DateTime($data['timestamp']);
     $dt->setTimezone(new DateTimeZone('UTC'));
@@ -105,7 +103,6 @@ try {
             $timestamp,
             $timeOfDay,
             $data['user_agent'],
-            (int)$data['frame_duration'],
             (int)$data['complexity'],
             (float)$data['pulse_energy'],
             (int)$data['tension'],

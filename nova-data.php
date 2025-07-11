@@ -21,7 +21,7 @@ try {
     $limit = 100;
     $offset = ($page - 1) * $limit;
     $stmt = $pdo->prepare(
-        "SELECT id, timestamp, user_agent, genesis_mode, frame_duration, complexity,
+        "SELECT id, timestamp, user_agent, genesis_mode, complexity,
                 pulse_energy, tension, center_row, center_col, pulse_length,
                 neighbor_threshold, collapse_threshold, fold_threshold,
                 potential_threshold, potential_decay, phase_mode, field_mapping,
@@ -55,8 +55,7 @@ try {
             showField($row['nova_hash']));
         echo ' UA: ' . showField($row['user_agent']) . "\n";
         echo ' Genesis Mode: ' . showField($row['genesis_mode']) . "\n";
-        echo ' Frame Duration: ' . (int)$row['frame_duration'] . ' ms'
-            . ' | Complexity: ' . (int)$row['complexity']
+        echo ' Complexity: ' . (int)$row['complexity']
             . ' | Energy: ' . (float)$row['pulse_energy']
             . ' | Tension: ' . (int)$row['tension'] . "\n";
         echo ' Center: (' . (int)$row['center_row'] . ', ' . (int)$row['center_col'] . ")\n";
@@ -98,8 +97,7 @@ try {
         text += String(nextIndex).padStart(3, '0') + ' - ' + row.timestamp + ' \uD83D\uDD11 Nova Hash: ' + showField(row.nova_hash) + '\n';
         text += ' UA: ' + showField(row.user_agent) + '\n';
         text += ' Genesis Mode: ' + showField(row.genesis_mode) + '\n';
-        text += ' Frame Duration: ' + parseInt(row.frame_duration) + ' ms' +
-            ' | Complexity: ' + parseInt(row.complexity) +
+        text += ' Complexity: ' + parseInt(row.complexity) +
             ' | Energy: ' + parseFloat(row.pulse_energy) +
             ' | Tension: ' + parseInt(row.tension) + '\n';
         text += ' Center: (' + parseInt(row.center_row) + ', ' + parseInt(row.center_col) + ')\n';
