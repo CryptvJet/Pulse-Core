@@ -78,6 +78,17 @@ npm test
 
 `npm test` runs the Jest suite which validates multi-nova logic, genesis modes and other utilities.
 
+### Database Configuration
+
+Nova event logging requires a `db_config.php` file with your database connection details. Start by copying the provided template and then edit it for your environment:
+
+```sh
+cp db_config.sample.php db_config.php
+# update db_config.php with your credentials
+```
+
+The generated `db_config.php` is ignored by Git so it won't be included in commits.
+
 The project is released under the MIT License (see `LICENSE`).
 
 ---
