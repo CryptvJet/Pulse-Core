@@ -534,6 +534,7 @@ function update() {
                     lastStateGrid,
                     flickerCountGrid,
                     potentialGrid,
+                    foldGrid,
                     r,
                     c,
                     n,
@@ -1301,6 +1302,7 @@ function init() {
     genesisMode = genesisSelect ? genesisSelect.value : 'stable';
     genesisPhase = postPhaseToggle && postPhaseToggle.checked ? 'post' : 'pre';
     updateControlState();
+    setupCollapsibleSections();
 }
 
 window.addEventListener('resize', () => {
@@ -1597,16 +1599,17 @@ if (hardResetBtn) {
     hardResetBtn.addEventListener('click', hardReset);
 }
 
-// Make sections collapsible
-document.querySelectorAll('.sectionHeader').forEach(header => {
-    header.addEventListener('click', () => {
-        const content = header.nextElementSibling;
-        if (content && content.classList.contains('sectionContent')) {
-            content.classList.toggle('collapsed');
-            header.classList.toggle('collapsed');
-        }
+function setupCollapsibleSections() {
+    document.querySelectorAll('.sectionHeader').forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            if (content && content.classList.contains('sectionContent')) {
+                content.classList.toggle('collapsed');
+                header.classList.toggle('collapsed');
+            }
+        });
     });
-});
+}
 
 // Additional hooks for pulse direction and substrate density will be added later.
 
