@@ -18,7 +18,8 @@ try {
     $stmt = $pdo->prepare(
         "SELECT timestamp, user_agent, genesis_mode, frame_duration, complexity,
                 pulse_energy, tension, center_row, center_col, pulse_length,
-                neighbor_threshold, collapse_threshold
+                neighbor_threshold, collapse_threshold, fold_threshold,
+                potential_threshold, potential_decay, phase_mode, field_mapping
          FROM nova_events
          ORDER BY timestamp DESC
          LIMIT 100"
@@ -37,6 +38,11 @@ try {
         echo ' Pulse Length: ' . (int)$row['pulse_length']
             . ' | Neighbor Threshold: ' . (int)$row['neighbor_threshold']
             . ' | Collapse Threshold: ' . (float)$row['collapse_threshold'] . "\n";
+        echo ' Fold Threshold: ' . (int)$row['fold_threshold']
+            . ' | Potential Threshold: ' . (float)$row['potential_threshold']
+            . ' | Potential Decay: ' . (float)$row['potential_decay'] . "\n";
+        echo ' Phase Mode: ' . htmlspecialchars($row['phase_mode'])
+            . ' | Field Mapping: ' . htmlspecialchars($row['field_mapping']) . "\n";
         echo str_repeat('-', 40) . "\n";
     }
 } catch (Exception $e) {

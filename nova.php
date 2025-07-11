@@ -30,7 +30,12 @@ $requiredFields = [
     'genesis_mode',
     'pulse_length',
     'neighbor_threshold',
-    'collapse_threshold'
+    'collapse_threshold',
+    'fold_threshold',
+    'potential_threshold',
+    'potential_decay',
+    'phase_mode',
+    'field_mapping'
 ];
 
 foreach ($requiredFields as $field) {
@@ -64,14 +69,20 @@ try {
         genesis_mode VARCHAR(32),
         pulse_length INT,
         neighbor_threshold INT,
-        collapse_threshold FLOAT
+        collapse_threshold FLOAT,
+        fold_threshold INT,
+        potential_threshold FLOAT,
+        potential_decay FLOAT,
+        phase_mode VARCHAR(50),
+        field_mapping VARCHAR(50)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
     $stmt = $pdo->prepare("INSERT INTO nova_events (
         timestamp, time_of_day, user_agent, frame_duration, complexity, pulse_energy,
         tension, center_row, center_col, genesis_mode, pulse_length,
-        neighbor_threshold, collapse_threshold
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        neighbor_threshold, collapse_threshold, fold_threshold,
+        potential_threshold, potential_decay, phase_mode, field_mapping
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $dt = new DateTime($data['timestamp']);
     $dt->setTimezone(new DateTimeZone('UTC'));
@@ -97,7 +108,12 @@ try {
             $data['genesis_mode'],
             (int)$data['pulse_length'],
             (int)$data['neighbor_threshold'],
-            (float)$data['collapse_threshold']
+            (float)$data['collapse_threshold'],
+            (int)$data['fold_threshold'],
+            (float)$data['potential_threshold'],
+            (float)$data['potential_decay'],
+            $data['phase_mode'],
+            $data['field_mapping']
         ]);
         $inserted++;
     }
